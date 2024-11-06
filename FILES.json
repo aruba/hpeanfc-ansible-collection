@@ -1,0 +1,117 @@
+{
+ "files": [
+  {
+   "name": ".",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": ".gitignore",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "00e151b2651c401873bc2aa978287834e08ab325637f987cb745e970179d3167",
+   "format": 1
+  },
+  {
+   "name": "docs",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "docs/afc_assign_fabric_and_role.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3b5266660fd251c274637257cfc03ea2ddc7cd2bb0489b800983c77792e854eb",
+   "format": 1
+  },
+  {
+   "name": "docs/afc_run_discovery.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "471d2127d81622769a5c0191b9936956253533bdff64fb38876fe1b5a3946cc5",
+   "format": 1
+  },
+  {
+   "name": "meta",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "meta/runtime.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "9fbd0c37dc83d0b8088af77b7c7ea48a6a7500546e0e4e83f5962c78ca75ddfd",
+   "format": 1
+  },
+  {
+   "name": "plugins",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/module_utils",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/module_utils/afc.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2a0d626b66515bb116b31b203250af5ee38dc4d5894cb889ad724aef92344c51",
+   "format": 1
+  },
+  {
+   "name": "plugins/modules",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "plugins/modules/afc_assign_fabric_and_role.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3ed065e2e29ba51b783709a435abc372c9e7dd278c1d23d12123d99700d5ca53",
+   "format": 1
+  },
+  {
+   "name": "plugins/modules/afc_run_discovery.py",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "33c4ba1bc971c43f3549b735bb4fcf1b6e8719a41a7bca123f2c36a92afdebdd",
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "2d4f2740354696eb33d236475d26be3b1d346a09219105d78a853f546a068adf",
+   "format": 1
+  },
+  {
+   "name": "requirements.txt",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "44593d3baacdc39e2ea5b6406ce52333d9e4fda13433f57353c3e1ae77a8239e",
+   "format": 1
+  },
+  {
+   "name": "requirements.yml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "e7f078936a5ff621dc91873822ecf1c92b8ab784ef5505141848371fd64f077d",
+   "format": 1
+  }
+ ],
+ "format": 1
+}

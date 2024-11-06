@@ -1,0 +1,35 @@
+{
+ "collection_info": {
+  "namespace": "arubanetworks",
+  "name": "afc",
+  "version": "0.0.1",
+  "authors": [
+   "Muralidhara Kakkunje"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "Aruba",
+   "AFC",
+   "Aruba Fabric Composer"
+  ],
+  "description": "A collection to manage actions through Aruba Fabric Composer",
+  "license": [],
+  "license_file": "LICENSE",
+  "dependencies": {
+   "ansible.netcommon": ">=3.0.0",
+   "ansible.utils": ">=2.6.1"
+  },
+  "repository": "https://github.com/ansible-collections/arubanetworks/afc",
+  "documentation": null,
+  "homepage": null,
+  "issues": "https://github.com/ansible-collections/arubanetworks/afc/issues"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "78dc0afb081b7d7d197a297bcd99e8e3317fac4284dde6dda24fe846c5bd1f5b",
+  "format": 1
+ },
+ "format": 1
+}
