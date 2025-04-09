@@ -1,26 +1,27 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
 DOCUMENTATION = r"""
 ---
-module: afc_sflow
+module: afc_multifabrics
 version_added: "0.0.1"
-short_description: Create or delete a SFlow configuration.
+short_description: Configure Multi-Fabrics.
 description: >
-    This module creates or deletes a SFlow configuration.
+    This module is used to configure Multi-Fabrics.
 options:
     afc_ip:
         description: >
-            IP address of the HPE ANW Fabric Composer.
+            IP address of HPE ANW Fabric Composer.
         type: str
         required: true
     afc_username:
-        description:
-        - User account having write permission on the HPE ANW Fabric Composer
+        description: >
+            User account having permission to create MF on
+            HPE ANW Fabric Composer
         type: str
         required: false
     afc_password:
@@ -28,130 +29,107 @@ options:
         - Password of the user account
         type: str
         required: false
+    auth_token:
+        description: >
+            Auth token from the create session playbook.
+        type: str
+        required: false
     operation:
         description: >
-            Operation to be performed on the SFlow configuration,
-            create or delete.
+            Operation to execute - Create.
         type: str
         choices:
             - create
-            - delete
         required: true
     data:
         description: >
-            SFlow configuration as per the example below.
+            Multi-Fabrics data containing information.
         type: dict
         suboptions:
             name:
-                description: sFlow Config name
+                description: EVPN Workflow Name
                 type: str
                 required: true
-            description:
-                description: sFlow Config description
+            local_fabric:
+                description: Name of the local Fabric
+                type: str
+                required: true
+            border_leader:
+                description: >
+                    Name or IPv4 Address of the Border Leader.
+                    In case of VSX just provide the Name or
+                    IPv4 Address of one of the members.
+                type: str
+                required: true
+            l3_ebgp_borders:
+                description: L3 eBGP border switch(es)
+                type: list
+                elements: str
+                required: false
+            bgp_auth_password:
+                description: Set password for bgp neighbor
                 type: str
                 required: false
-            polling_interval:
-                description: >
-                    Polling Interval.
-                type: int
-                default: 20
+            uplink_to_uplink:
+                description: Enable or Disable uplink to uplink.
+                type: bool
                 required: false
-            sampling_rate:
-                description: >
-                    Sampling Rate.
-                type: int
-                default: 20000
-                required: false
-            source_namespace:
-                description: >
-                    VRF to export flows.
-                type: str
-                default: 'management'
-                required: false
-            source_ip_address:
-                description: Source IP address.
-                type: str
-                required: false
-            collectors:
-                description: External Collectors information
+            remote_fabrics:
+                description: Information related to the remote Fabric.
                 type: list
                 elements: dict
+                required: true
                 suboptions:
-                    destination_ip_address:
-                        description: Destination IP address.
+                    fabric:
+                        description: Name of the remote Fabric
                         type: str
                         required: true
-                    destination_port:
-                        description: Destination UDP port.
+                    border_leader:
+                        description: >
+                            Name or IPv4 Address of the Border Leader.
+                            In case of VSX just provide the Name or
+                            IPv4 Address of one of the members.
                         type: str
-                        required: false
-                required: true
-            fabrics:
-                description: List of Fabrics
-                type: list
-                elements: str
-                required: false
-            switches:
-                description: List of Switches
-                type: list
-                elements: str
-                required: false
+                        required: true
+                    peering_ip:
+                        description: IP address for BGP neighbor peering
+                        type: str
+                        required: true
         required: true
 author: Aruba Networks (@ArubaNetworks)
 """
 
 EXAMPLES = r"""
--   name: Create a SFlow configuration using username and password
-    arubanetworks.afc.afc_sflow:
+-   name: Configure L3LS settings using username and password
+    arubanetworks.afc.afc_multifabrics:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
         operation: "create"
         data:
-            name: Test-Sflow
-            enable_sflow: true
-            polling_interval: 20
-            sampling_rate: 20000
-            collectors:
-                -   destination_port: 6343
-                    destination_ip_address: "192.168.56.12"
-            fabrics: "Test-Fabric"
+            name: "MF-ArubaFabric"
+            local_fabric: "Aruba-Fabric"
+            border_leader: "10.10.10.20"
+            remote_fabrics:
+                - fabric: "Aruba-Fabric2"
+                  border_leader: "10.20.20.20"
+                  peering_ip: "loopback0"
 
--   name: Delete a SFlow configuration using username and password
-    arubanetworks.afc.afc_sflow:
-        afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        data:
-            name: "Test-Sflow"
-        operation: "delete"
-
--   name: Create a SFlow configuration using token
-    arubanetworks.afc.afc_sflow:
+-   name: Configure L3LS settings using token
+    arubanetworks.afc.afc_multifabrics:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
         operation: "create"
-        operation: "create"
         data:
-            name: Test-Sflow
-            enable_sflow: false
-            polling_interval: 20
-            sampling_rate: 20000
-            source_namespace: "management"
-            collectors:
-                -   destination_port: 6343
-                    destination_ip_address: "192.168.56.12"
-            fabrics: "Test-Fabric"
+            name: "MF-ArubaFabric"
+            local_fabric: "Aruba-Fabric"
+            border_leader: "10.10.10.20"
+            remote_fabrics:
+                - fabric: "Aruba-Fabric2"
+                  border_leader: "10.20.20.20"
+                  peering_ip: "loopback0"
 
--   name: Delete a SFlow configuration using token
-    arubanetworks.afc.afc_sflow:
-        afc_ip: "10.10.10.10"
-        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        data:
-            name: "Test-Sflow"
-        operation: "delete"
 """
-
 
 RETURN = r"""
 message:
@@ -175,7 +153,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
     instantiate_afc_object,
 )
-from pyafc.services import sflow
+from pyafc.fabric import fabric
 
 
 def main():
@@ -193,7 +171,7 @@ def main():
         supports_check_mode=True,
     )
 
-    # Get playbook"s arguments
+    # Get playbook's arguments
     token = None
     ip = ansible_module.params["afc_ip"]
     if "afc_username" in list(ansible_module.params.keys()):
@@ -202,7 +180,6 @@ def main():
         password = ansible_module.params["afc_password"]
     if "auth_token" in list(ansible_module.params.keys()):
         token = ansible_module.params["auth_token"]
-    operation = ansible_module.params["operation"]
     data = ansible_module.params["data"]
 
     if token is not None:
@@ -217,6 +194,8 @@ def main():
             "password": password,
         }
 
+    afc_instance = instantiate_afc_object(data=auth_data)
+
     result = {"changed": False}
 
     if ansible_module.check_mode:
@@ -229,14 +208,18 @@ def main():
     afc_instance = instantiate_afc_object(data=auth_data)
 
     if afc_instance.afc_connected:
-        sflow_instance = sflow.Sflow(afc_instance.client, name=data["name"])
-        if operation == "create":
-            message, status, changed = sflow_instance.create_sflow(**data)
-        elif operation == "delete":
-            message, status, changed = sflow_instance.delete_sflow()
+        fabric_instance = fabric.Fabric(
+            afc_instance.client,
+            name=data["local_fabric"],
+        )
+        if fabric_instance.uuid:
+            message, status, changed = fabric_instance.create_multi_fabrics(
+                **data
+            )
         else:
-            message = "Operation not supported - No action taken"
-
+            message = f"Fabric {data['local_fabric']} not found"
+            status = False
+            changed = False
         # Disconnect session if username and password are passed
         if username and password:
             afc_instance.disconnect()

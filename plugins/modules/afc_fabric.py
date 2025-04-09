@@ -1,31 +1,29 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-# (C) Copyright 2019-2023 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: afc_fabric
 version_added: "0.0.1"
-short_description: Assign multiple switches to the specified fabric along with role.
+short_description:  >
+    Create a FAbric or Assign multiple switches to
+    the specified fabric with role.
 description: >
-    This module is used to create, delete a fabric or assign multiple switches to the specified fabric along with role.
+    This module is used to create, delete a fabric or assign multiple switches
+    to the specified fabric along with role.
 options:
     afc_ip:
         description: >
-            IP address of the Aruba Fabric Composer.
+            IP address of the HPE ANW Fabric Composer.
         type: str
         required: true
     afc_username:
         description:
-        - User account having permission to create VRF on the Aruba Fabric Composer
+        - User account having write permission on the HPE ANW Fabric Composer
         type: str
         required: false
     afc_password:
@@ -38,60 +36,122 @@ options:
             Auth token from the create session playbook.
         type: str
         required: false
-    fabric_name:
-        description: >
-            Name of the Fabric.
-        type: str
-        required: true
     operation:
         description: >
-                Operation to be performed with the Fabric, create or delete or assign
+            Operation to be performed with the Fabric.
         type: str
+        choices:
+            - create
+            - assign
+            - delete
         required: true
-    fabric_timezone:
+    data:
         description: >
-            Fabric timezone, needed for create operation
-        type: str
-        required: false
-    devices_assignment:
-        description: >
-            Device assignment. The dictionary to contain IP addresses as key and roles as the value.
+            Device assignment or Fabric Data.
         type: dict
         required: true
+        suboptions:
+            name:
+                description: Fabric Name
+                type: str
+                required: true
+            timezone:
+                description: Timezone
+                type: str
+                required: false
+            fabric_class:
+                description: Class of fabric to discover.
+                type: str
+                choices:
+                    - data
+                    - management
+                default: 'data'
+                required: false
+            roles:
+                description: >
+                    Roles to be assigned on a per device basis
+                    The key must be an ipv4 address or and IPv4 range
+                    and the role must be one of the following values
+                    ["spine", "leaf", "border_leaf", "sub_leaf"]
+                type: dict
+                required: false
+
 author: Aruba Networks (@ArubaNetworks)
-'''
+"""
 
-EXAMPLES = r'''
--   name: Assign multiple switches to the Fabric and assign role
+EXAMPLES = r"""
+-   name: Create Fabric using usename and password
     arubanetworks.afc.afc_fabric:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        operation: "assign"
-        devices_assignment:
-            10.10.10.11: "leaf"
-            10.10.10.12: "leaf"
-
--   name: Create Fabric
-    arubanetworks.afc.afc_fabric:
-        afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        fabric_timezone: "Europe/London"
         operation: "create"
+        data:
+            name: "Aruba-Fabric"
+            timezone: "Europe/London"
 
--   name: Delete Fabric
+-   name: Delete Fabric using usename and password
     arubanetworks.afc.afc_fabric:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
         operation: "delete"
-'''
+        data:
+            name: "Aruba-Fabric"
 
-RETURN = r'''
+-   name: Assign multiple switches to the Fabric and assign role using usename
+    arubanetworks.afc.afc_fabric:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        operation: "assign"
+        data:
+            fabric: "Aruba-Fabric"
+            roles:
+                10.10.10.11: "border_leaf"
+                10.10.10.12: "border_leaf"
+                10.10.10.13: "spine"
+                10.10.10.14: "spine"
+                10.10.10.15: "leaf"
+                10.10.10.16: "leaf"
+                10.10.10.17: "subleaf"
+
+-   name: Create Fabric using token
+    arubanetworks.afc.afc_fabric:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        operation: "create"
+        data:
+            name: "Aruba-Fabric"
+            timezone: "Europe/London"
+
+-   name: Delete Fabric using token
+    arubanetworks.afc.afc_fabric:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        operation: "delete"
+        data:
+            name: "Aruba-Fabric"
+
+-   name: Assign multiple switches to the Fabric and assign role using token
+    arubanetworks.afc.afc_fabric:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        operation: "assign"
+        data:
+            fabric: "Aruba-Fabric"
+            roles:
+                10.10.10.11: "border_leaf"
+                10.10.10.12: "border_leaf"
+                10.10.10.13: "spine"
+                10.10.10.14: "spine"
+                10.10.10.15: "leaf"
+                10.10.10.16: "leaf"
+                10.10.10.17: "subleaf"
+
+"""
+
+RETURN = r"""
 message:
     description: The output generated by the module
     type: str
@@ -107,84 +167,90 @@ changed:
     type: bool
     returned: always
     sample: True
-'''
+"""
 
-import time
-from pyafc.fabric import fabric
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import instantiate_afc_object
+from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    instantiate_afc_object,
+)
+from pyafc.fabric import fabric
 
 
 def main():
-    module_args = dict(
-        afc_ip=dict(type="str", required=True),
-        afc_username=dict(type="str", required=False),
-        afc_password=dict(type="str", required=False),
-        auth_token=dict(type="str", required=False),
-        fabric_name=dict(type="str", required=True),
-        fabric_timezone=dict(type="str", required=False),
-        operation=dict(type="str", required=True),
-        devices_assignment=dict(type="dict", required=False)
-    )
+    module_args = {
+        "afc_ip": {"type": "str", "required": True},
+        "afc_username": {"type": "str", "required": False},
+        "afc_password": {"type": "str", "required": False},
+        "auth_token": {"type": "str", "required": False},
+        "operation": {"type": "str", "required": True},
+        "data": {"type": "dict", "required": False},
+    }
 
     ansible_module = AnsibleModule(
-        argument_spec=module_args, supports_check_mode=True
+        argument_spec=module_args,
+        supports_check_mode=True,
     )
 
     # Get playbook's arguments
-    fabric_data = {}
     token = None
     ip = ansible_module.params["afc_ip"]
-    if 'afc_username' in list(ansible_module.params.keys()):
+    if "afc_username" in list(ansible_module.params.keys()):
         username = ansible_module.params["afc_username"]
-    if 'afc_password' in list(ansible_module.params.keys()):
+    if "afc_password" in list(ansible_module.params.keys()):
         password = ansible_module.params["afc_password"]
-    if 'auth_token' in list(ansible_module.params.keys()):
+    if "auth_token" in list(ansible_module.params.keys()):
         token = ansible_module.params["auth_token"]
-    fabric_name = ansible_module.params["fabric_name"]
+    data = ansible_module.params["data"]
     operation = ansible_module.params["operation"]
-    if 'devices_assignment' in list(ansible_module.params.keys()):
-        devices_assignment = ansible_module.params["devices_assignment"]
-    if 'fabric_timezone' in list(ansible_module.params.keys()):
-        fabric_data['timezone'] = ansible_module.params["fabric_timezone"]
 
     if token is not None:
-        data = {
-            "ip": ip,
-            "auth_token": token
-        }
+        auth_data = {"ip": ip, "auth_token": token}
     else:
-        data = {
-            "ip": ip,
-            "username": username,
-            "password": password
-        }
+        auth_data = {"ip": ip, "username": username, "password": password}
 
-    result = dict(changed=False)
+    result = {"changed": False}
 
     if ansible_module.check_mode:
         ansible_module.exit_json(**result)
 
-    afc_instance = instantiate_afc_object(data=data)
+    status = False
+    changed = False
+    message = ""
 
-    if operation == 'create':
-        fabric_instance = fabric.Fabric(afc_instance.client, name=fabric_name, **fabric_data)
-        message, status, changed = fabric_instance.create_fabric(name=fabric_name, **fabric_data)
-    elif operation == 'delete':
-        fabric_instance = fabric.Fabric(afc_instance.client, name=fabric_name)
-        message, status, changed = fabric_instance.delete_fabric(name=fabric_name)
-    elif operation == 'assign':
-        fabric_instance = fabric.Fabric(afc_instance.client, name=fabric_name)
-        message, status, changed = fabric_instance.add_multiple_to_fabric(devices_list=devices_assignment)
-        time.sleep(60)
+    afc_instance = instantiate_afc_object(data=auth_data)
 
-    result['message'] = message
-    result['status'] = status
-    result['changed'] = changed
+    if afc_instance.afc_connected:
 
-    # Disconnect session if username and password are passed
-    if username and password:
-        afc_instance.disconnect()
+        if operation == "create":
+            fabric_instance = fabric.Fabric(afc_instance.client, **data)
+            message, status, changed = fabric_instance.create_fabric(**data)
+        else:
+            fabric_instance = fabric.Fabric(
+                afc_instance.client,
+                name=data["fabric"],
+                **data,
+            )
+            if fabric_instance.uuid:
+                if operation == "delete":
+                    message, status, changed = fabric_instance.delete_fabric()
+                elif operation == "assign":
+                    message, status, changed = (
+                        fabric_instance.add_multiple_to_fabric(**data)
+                    )
+                else:
+                    message = "Operation not supported - No action taken"
+            else:
+                message = "Fabric does not exist - No action Taken"
+        # Disconnect session if username and password are passed
+        if username and password:
+            afc_instance.disconnect()
+
+    else:
+        message = "Not connected to AFC"
+
+    result["message"] = message
+    result["status"] = status
+    result["changed"] = changed
 
     # Exit
     if status:

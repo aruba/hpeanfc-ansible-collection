@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: true
 afc_password:
@@ -34,5 +34,15 @@ afc_password:
 
 -   name: Capture the auth_token
     ansible.builtin.set_fact:
-        auth_token: "{{ reg_afc_instance['auth_token'] }}
+        auth_token: "{{ reg_afc_instance['auth_token'] }}"
+
+-   name: Create Fabric using token
+    arubanetworks.afc.afc_fabric:
+        afc_ip: "10.10.10.10"
+        auth_token: "{{ auth_token }}"
+        fabric_name: "Aruba-Fabric"
+        fabric_timezone: "Europe/London"
+        operation: "create"
 ```
+
+Note: While re-using auth_token, the modules should never be provided with the afc_username and afc_password module parameters. If provided, the session would be closed considering the authentication is done using username and password only.

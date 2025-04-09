@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -27,22 +27,22 @@ auth_token:
     required: false
 dss_object_name:
     description: >
-        Name of the object that will be created or deleted from.
+        Name of the object that will be created, deleted or updated (only network).
     type: str
     required: true
 dss_object_type:
     description: >
-        Type of the dss object. Options policy, endpoint_group, rule, qualifier, vnic_move.
+        Type of the dss object. Options policy, endpoint_group, rule, qualifier or network.
     type: str
     required: true
 dss_object_data:
     description: >
-        Object specific data for policy, endpoint_group, rule, qualifier, vnic_move.
+        Object specific data for policy, endpoint_group, rule, qualifier or network. Structure is provided in the example.
     type: dict
     required: true
 operation:
     description: >
-        Operation to be performed on the DSS configuration, create or delete.
+        Operation to be performed on the DSS configuration, create, delete or update (only network).
     type: str
     required: true
 ```
@@ -59,16 +59,6 @@ operation:
         dss_object_type: "policy"
         dss_object_data:
             policy_subtype: "firewall"
-            priority: 10
-            rules:
-                - "test_rule"
-            enforcers:
-                -   fabric: "Test-Fabric"
-                    vrf: "Test-VRF"
-                    network: "VLAN251"
-                    enforcer_type: "network"
-                    direction: "egress"
-                    pdt_type: "leaf"
             object_type: "policy"
         operation: "create"
 
@@ -119,7 +109,7 @@ operation:
         dss_object_data:
             type: "layer3"
             endpoints:
-                -   vm_name: "Test-Fabric"
+                -   vm_name: "VM1"
                     vnic_name: "Network adapter 1"
         operation: "create"
 
@@ -156,6 +146,43 @@ operation:
         dss_object_type: "qualifier"
         operation: "delete"
 
+-   name: Create network using username and password
+    arubanetworks.afc.afc_dss:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        dss_object_name: "test_network"
+        dss_object_type: "network"
+        dss_object_data:
+            fabric_name: "Test-FB01"
+            vrf: "Test-FB01-VRF"
+            vlan_id: 100
+            service_bypass: true
+        operation: "create"
+
+-   name: Update network using username and password
+    arubanetworks.afc.afc_dss:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        dss_object_name: "test_network"
+        dss_object_type: "network"
+        dss_object_data:
+            fabric_name: "Test-FB01"
+            vrf: "Test-FB01-VRF"
+            vlan_id: 1080
+            service_bypass: true
+        operation: "update"
+
+-   name: Delete network using username and password
+    arubanetworks.afc.afc_dss:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        dss_object_name: "test_network"
+        dss_object_type: "network"
+        operation: "delete"
+
 -   name: Create policy using token
     arubanetworks.afc.afc_dss:
         afc_ip: "10.10.10.10"
@@ -164,16 +191,6 @@ operation:
         dss_object_type: "policy"
         dss_object_data:
             policy_subtype: "firewall"
-            priority: 10
-            rules:
-                - "test_rule"
-            enforcers:
-                -   fabric: "Test-Fabric"
-                    vrf: "Test-VRF"
-                    network: "VLAN251"
-                    enforcer_type: "network"
-                    direction: "egress"
-                    pdt_type: "leaf"
             object_type: "policy"
         operation: "create"
 
@@ -252,5 +269,39 @@ operation:
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
         dss_object_name: "test_sq"
         dss_object_type: "qualifier"
+        operation: "delete"
+
+-   name: Create network using token
+    arubanetworks.afc.afc_dss:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        dss_object_name: "test_network"
+        dss_object_type: "network"
+        dss_object_data:
+            fabric_name: "Test-FB01"
+            vrf: "Test-FB01-VRF"
+            vlan_id: 100
+            service_bypass: true
+        operation: "create"
+
+-   name: Update network using token
+    arubanetworks.afc.afc_dss:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        dss_object_name: "test_network"
+        dss_object_type: "network"
+        dss_object_data:
+            fabric_name: "Test-FB01"
+            vrf: "Test-FB01-VRF"
+            vlan_id: 1080
+            service_bypass: true
+        operation: "update"
+
+-   name: Delete network using token
+    arubanetworks.afc.afc_dss:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        dss_object_name: "test_network"
+        dss_object_type: "network"
         operation: "delete"
 ```

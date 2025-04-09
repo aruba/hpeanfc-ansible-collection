@@ -6,35 +6,35 @@ Description: This module creates or deletes a SFlow configuration in the specifi
 
 ```YAML
 afc_ip:
-	description: >
-		IP address of the Aruba Fabric Composer.
-	type: str
-	required: true
+    description: >
+        IP address of the Aruba Fabric Composer.
+    type: str
+    required: true
 afc_username:
-	description:
-	- User account having permission to create VRF on the Aruba Fabric Composer
-	type: str
-	required: false
+    description:
+    - User account having write permission on the Aruba Fabric Composer
+    type: str
+    required: false
 afc_password:
-	description:
-	- Password of the user account
-	type: str
-	required: false
+    description:
+    - Password of the user account
+    type: str
+    required: false
 operation:
-	description: >
-		Operation to be performed on the SFlow configuration, create or delete.
-	type: str
-	required: true
+    description: >
+        Operation to be performed on the SFlow configuration, create or delete.
+    type: str
+    required: true
 sflow_name:
-	description: >
-		Name of the SFlow configuration to be created or deleted.
-	type: str
-	required: true
+    description: >
+        Name of the SFlow configuration to be created or deleted.
+    type: str
+    required: true
 sflow_data:
-	description: >
-		SFlow configuration as per the example below.
-	type: dict
-	required: true
+    description: >
+        SFlow configuration as per the example below. Strucutre is provided in the example.
+    type: dict
+    required: true
 ```
 
 ##### EXAMPLES

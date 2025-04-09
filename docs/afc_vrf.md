@@ -6,45 +6,45 @@ Description: This module creates or deletes a VRF in the specified fabric.
 
 ```YAML
 afc_ip:
-	description: >
-		IP address of the Aruba Fabric Composer.
-	type: str
-	required: true
+    description: >
+        IP address of the Aruba Fabric Composer.
+    type: str
+    required: true
 afc_username:
-	description:
-	- User account having permission to create VRF on the Aruba Fabric Composer
-	type: str
-	required: false
+    description:
+    - User account having write permission on the Aruba Fabric Composer
+    type: str
+    required: false
 afc_password:
-	description:
-	- Password of the user account
-	type: str
-	required: false
+    description:
+    - Password of the user account
+    type: str
+    required: false
 auth_token:
-	description: >
-		Auth token from the create session playbook.
-	type: str
-	required: false
+    description: >
+        Auth token from the create session playbook.
+    type: str
+    required: false
 fabric_name:
-	description: >
-		Name of the Fabric where the VRF will be created or deleted from.
-	type: str
-	required: true
+    description: >
+        Name of the Fabric where the VRF will be created or deleted from.
+    type: str
+    required: true
 operation:
-	description: >
-		Operation to be performed on the VRF, create or delete.
-	type: str
-	required: true
+    description: >
+        Operation to be performed on the VRF, create delete or reapply.
+    type: str
+    required: true
 vrf_name:
-	description: >
-		Name of the VRF to be created or deleted.
-	type: str
-	required: true
+    description: >
+        Name of the VRF to be created or deleted or reapplied on.
+    type: str
+    required: true
 vrf_data:
-	description: >
-		VRF specific data. Mandatory for create operation.
-	type: dict
-	required: false
+    description: >
+        VRF specific data. Mandatory for create operation. Structure providedn in the example.
+    type: dict
+    required: false
 ```
 
 ##### EXAMPLES
@@ -72,8 +72,17 @@ vrf_data:
                             evpn: False
                             route_mode: "both"
 
+-   name: Reapply VRF using username and password
+    arubanetworks.afc.afc_vrf:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        fabric_name: "Aruba-Fabric"
+        vrf_name: "Aruba-VRF"
+        operation: "reapply"
+
 -   name: Delete VRF using username and password
-    arubanetworks.afc.afc_svi:
+    arubanetworks.afc.afc_vrf:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
@@ -102,8 +111,16 @@ vrf_data:
                             evpn: False
                             route_mode: "both"
 
+-   name: Reapply VRF using username and password
+    arubanetworks.afc.afc_vrf:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        fabric_name: "Aruba-Fabric"
+        vrf_name: "Aruba-VRF"
+        operation: "reapply"
+
 -   name: Delete VRF using token
-    arubanetworks.afc.afc_svi:
+    arubanetworks.afc.afc_vrf:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
         fabric_name: "Aruba-Fabric"

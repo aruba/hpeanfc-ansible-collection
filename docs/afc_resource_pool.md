@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -32,7 +32,7 @@ resource_pool_name:
     required: true
 resource_pool_data:
     description: >
-        Resource pool data containing type and pool_ranges
+        Resource pool data containing type and pool_ranges. Structure is provided in the example.
     type: dict
     required: true
 ```
@@ -40,7 +40,7 @@ resource_pool_data:
 ##### EXAMPLES
 
 ```YAML
--   name: Create resource pool using username and password
+-   name: Create IPv4 resource pool using username and password
     arubanetworks.afc.afc_resource_pool:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
@@ -50,6 +50,17 @@ resource_pool_data:
         resource_pool_data:
             type: "IPv4"
             pool_ranges: "10.10.20.0/24"
+
+-   name: Create MAC resource pool using username and password
+    arubanetworks.afc.afc_resource_pool:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        resource_pool_name: "MAC POOL"
+        operation: "create"
+        resource_pool_data:
+            type: "MAC"
+            pool_ranges: "00:00:00:00:00:01-00:00:00:00:00:FF"
 
 -   name: Delete resource pool using username and password
     arubanetworks.afc.afc_resource_pool:

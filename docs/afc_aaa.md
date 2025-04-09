@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -37,7 +37,7 @@ radius_name:
     required: true
 radius_data:
     description:
-    - The readius configuration data for create operation
+    - The readius configuration data for create operation. Structure is provided in the example
     type: dict
     required: false
 ```
@@ -52,9 +52,10 @@ radius_data:
         afc_password: "afc_password"
         radius_name: "Radius-Test"
         radius_data:
-            secret: "Test"
-            server: "192.16.56.12"
-            port: 1812
+            config:
+                secret: "Test"
+                server: "192.16.56.12"
+                port: 1812
         operation: "create"
 
 -   name: Delete AAA Radius config using username and password
@@ -71,9 +72,10 @@ radius_data:
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
         radius_name: "Radius-Test"
         radius_data:
-            secret: "Test"
-            server: "192.16.56.12"
-            port: 1812
+            config:
+                secret: "Test"
+                server: "192.16.56.12"
+                port: 1812
         operation: "create"
 
 -   name: Delete AAA Radius config using token

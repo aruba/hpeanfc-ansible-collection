@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -47,7 +47,7 @@ ospf_object_type:
     required: true
 ospf_object_data:
     description: >
-        Object specific data for OSPF router or area or interface.
+        Object specific data for OSPF router or area or interface. Structure is provided in the example.
     type: dict
     required: true
 operation:
@@ -100,6 +100,7 @@ operation:
         ospf_object_data:
             ospf_router: "Test-OSPF-Router"
             switches: "10.1.66.11"
+            area_id: 1
         operation: "create"
 
 -   name: Delete OSPF Area using username and password
@@ -127,6 +128,7 @@ operation:
             area: "0.0.0.1"
             interface: "1/1/29"
             network_type: "ospf_iftype_pointopoint"
+            process: 10
         operation: "create"
 
 -   name: Delete OSPF Interface using username and password
@@ -139,8 +141,6 @@ operation:
         ospf_object_name: "Test-OSPF-Interface"
         ospf_object_type: "interface"
         operation: "delete"
-
-
 
 -   name: Create OSPF Router using token
     arubanetworks.afc.afc_ospf:
@@ -179,6 +179,7 @@ operation:
         ospf_object_data:
             ospf_router: "Test-OSPF-Router"
             switches: "10.1.66.11"
+            area_id: 1
         operation: "create"
 
 -   name: Delete OSPF Area using token
@@ -204,6 +205,7 @@ operation:
             area: "0.0.0.1"
             interface: "1/1/29"
             network_type: "ospf_iftype_pointopoint"
+            process: 10
         operation: "create"
 
 -   name: Delete OSPF Interface using token

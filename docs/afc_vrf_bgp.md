@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -42,7 +42,7 @@ vrf_name:
     required: true
 bgp_data:
     description: >
-        BGP configuration options.
+        BGP configuration options. Structure is provided in the example.
     type: dict
     required: true
 ```

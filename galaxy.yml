@@ -18,15 +18,16 @@ readme: README.md
 authors:
 - Muralidhara Kakkunje
 - Rupali Ishwar Mali
+- Arnaud Le Gall
 
 ### OPTIONAL but strongly recommended
 # A short summary description of the collection
-description: Aruba Fabric Composer collections
+description: HPE Aruba Networking Fabric Composer collections
 
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- GPL-2.0-or-later
+- GPL-3.0-or-later
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'

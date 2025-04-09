@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -37,7 +37,7 @@ rp_object_type:
     required: true
 rp_object_data:
     description: >
-        Object specific data for route_map, prefix_list, community_list, aspath_list.
+        Object specific data for route_map, prefix_list, community_list, aspath_list. Structure is provided in the example.
     type: dict
     required: true
 operation:
@@ -58,7 +58,8 @@ operation:
         rp_object_name: "Test-Route-Map"
         rp_object_type: "route_map"
         rp_object_data:
-            switches: '10.10.10.109'
+            switches:
+            -   '10.10.10.109'
             entries:
             -   seq: 10
                 action: "deny"
@@ -88,10 +89,11 @@ operation:
         rp_object_name: "Test-ASPath-List"
         rp_object_type: "aspath_list"
         rp_object_data:
-            switches: '10.10.10.109'
+            switches:
+            -   '10.10.10.109'
+            description: ""
             entries:
-            -   description: ""
-                seq: 10
+            -   seq: 10
                 action: "deny"
                 regex: "_65001$"
         operation: "create"
@@ -113,7 +115,8 @@ operation:
         rp_object_name: "Test-Community-List"
         rp_object_type: "community_list"
         rp_object_data:
-            switches: '10.10.10.11'
+            switches:
+            -   '10.10.10.11'
             type: "community-expanded-list"
             entries:
             -   description: ""

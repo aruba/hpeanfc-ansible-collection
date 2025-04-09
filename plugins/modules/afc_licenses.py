@@ -7,11 +7,11 @@
 
 DOCUMENTATION = r"""
 ---
-module: afc_dns
+module: afc_licenses
 version_added: "0.0.1"
-short_description: Create or delete a DNS Entry in the specified fabric.
+short_description: Create or delete a licenses in AFC.
 description: >
-    This module creates or deletes a DNS Entry in the specified fabric.
+    This module creates or deletes a licenses in AFC.
 options:
     afc_ip:
         description: >
@@ -19,8 +19,9 @@ options:
         type: str
         required: true
     afc_username:
-        description:
-        - User account having write permission on the HPE ANW Fabric Composer
+        description: >
+            User account having permission to push licenses on the
+            HPE ANW Fabric Composer
         type: str
         required: false
     afc_password:
@@ -35,7 +36,7 @@ options:
         required: false
     operation:
         description: >
-            Operation to be performed on the DNS entry, create or delete.
+            Operation to be performed on the license, create or delete.
         type: str
         choices:
             - create
@@ -43,92 +44,44 @@ options:
         required: true
     data:
         description: >
-            Dictionary of the mandatory actions as depicted in the example.
+            Data of licenses as depicted in the example.
         type: dict
-        required: true
         suboptions:
-            name:
-                description: DHCP Relay Config name
-                type: str
-                required: true
-            description:
-                description: DHCP Relay Config description
-                type: str
-                required: false
-            domain_name:
-                description: Domain Name to be used
-                type: str
-                required: false
-            domain_list:
+            license:
                 description: >
-                    List of Domains Names. Not required if
-                    "domain_name" is used
-                type: list
-                elements: str
+                   License provided by Aruba.
+                   Required for 'create'
+                type: str
                 required: false
-            name_servers:
-                description: List of DNS Servers
-                type: list
-                elements: str
-                required: true
-            fabrics:
-                description: List of Fabrics
-                type: list
-                elements: str
+            license_key:
+                description: >
+                    License key found in AFC WebUI.
+                    Required for 'delete'
+                type: str
                 required: false
-            switches:
-                description: List of Switches
-                type: list
-                elements: str
-                required: false
+        required: true
 
 author: Aruba Networks (@ArubaNetworks)
 """
 
 EXAMPLES = r"""
--   name: Create DNS Entry using username and password
-    arubanetworks.afc.afc_dns:
+-   name: Push new license
+    arubanetworks.afc.afc_licenses:
         afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        operation: "create"
+        afc_username: "admin"
+        afc_password: "server"
+        operation: create
         data:
-            name: "Test-DNS"
-            fabrics:
-              - "Test-Fabric"
-            domain_name: "example.com"
-            name_servers:
-              - "10.10.20.1"
+            license: {<license provided by HPE>}
 
--   name: Delete DNS Entry using username and password
-    arubanetworks.afc.afc_dns:
+-   name: Delete license
+    arubanetworks.afc.afc_licenses:
         afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        operation: "delete"
+        afc_username: "admin"
+        afc_password: "server"
+        operation: delete
         data:
-            name: "Test-DNS"
-
--   name: Create DNS Entry using token
-    arubanetworks.afc.afc_dns:
-        afc_ip: "10.10.10.10"
-        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        operation: "create"
-        data:
-            name: "Test-DNS"
-            fabrics:
-              - "Test-Fabric"
-            domain_name: "example.com"
-            name_servers:
-              - "10.10.20.1"
-
--   name: Delete DNS Entry using token
-    arubanetworks.afc.afc_dns:
-        afc_ip: "10.10.10.10"
-        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        operation: "delete"
-        data:
-            name: "Test-DNS"
+            license_key: ABCD12345DEF
 """
 
 
@@ -154,7 +107,6 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
     instantiate_afc_object,
 )
-from pyafc.services import dns
 
 
 def main():
@@ -181,8 +133,8 @@ def main():
         password = ansible_module.params["afc_password"]
     if "auth_token" in list(ansible_module.params.keys()):
         token = ansible_module.params["auth_token"]
-    data = ansible_module.params["data"]
     operation = ansible_module.params["operation"]
+    data = ansible_module.params["data"]
 
     if token is not None:
         auth_data = {"ip": ip, "auth_token": token}
@@ -201,23 +153,21 @@ def main():
     afc_instance = instantiate_afc_object(data=auth_data)
 
     if afc_instance.afc_connected:
+
         if operation == "create":
-            dns_instance = dns.Dns(afc_instance.client, **data)
-            message, status, changed = dns_instance.create_dns(**data)
+            message, status, changed = afc_instance.push_license(
+                data["license"],
+            )
         elif operation == "delete":
-            dns_instance = dns.Dns(afc_instance.client, **data)
-            if dns_instance.uuid:
-                message, status, changed = dns_instance.delete_dns()
-            else:
-                message = "DNS does not exist - No action taken"
-                status = True
+            message, status, changed = afc_instance.delete_license(
+                data["license_key"],
+            )
         else:
             message = "Operation not supported - No action taken"
 
         # Disconnect session if username and password are passed
         if username and password:
             afc_instance.disconnect()
-
     else:
         message = "Not connected to AFC"
 

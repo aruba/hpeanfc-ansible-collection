@@ -12,7 +12,7 @@ afc_ip:
     required: true
 afc_username:
     description:
-    - User account having permission to create VRF on the Aruba Fabric Composer
+    - User account having write permission on the Aruba Fabric Composer
     type: str
     required: false
 afc_password:
@@ -32,15 +32,16 @@ fabric_name:
     required: true
 operation:
     description: >
-        Operation to be performed with the EVPN, create or delete.
+        Operation to be performed with the EVPN, create, delete or reapply.
     type: str
     required: true
 vni_data:
     description: >
         VNI Data with system_mac_range, as_number, name_prefix, rt_type, vlans, vni_base and description.
         The values as_number, vlans and the vni_base, though integers need to be represented as string.
+        Structure is provided in the example. Not needed for reapply
     type: dict
-    required: true
+    required: false
 ```
 
 ##### EXAMPLES
@@ -78,6 +79,14 @@ vni_data:
             vni_base: "10000"
             description: "Test EVPN"
 
+-   name: Reapply EVPN using username and password
+    arubanetworks.afc.afc_evpn:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        fabric_name: "Aruba-Fabric"
+        operation: "reapply"
+
 -   name: Create EVPN using token
     arubanetworks.afc.afc_evpn:
         afc_ip: "10.10.10.10"
@@ -107,4 +116,11 @@ vni_data:
             vlans: "250"
             vni_base: "10000"
             description: "Test EVPN"
+
+-   name: Reapply EVPN using token
+    arubanetworks.afc.afc_evpn:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        fabric_name: "Aruba-Fabric"
+        operation: "reapply"
 ```
