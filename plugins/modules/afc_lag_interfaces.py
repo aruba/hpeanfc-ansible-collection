@@ -256,8 +256,6 @@ def main():
             "password": password,
         }
 
-    afc_instance = instantiate_afc_object(data=auth_data)
-
     result = {"changed": False}
 
     if ansible_module.check_mode:
