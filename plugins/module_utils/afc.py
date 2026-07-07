@@ -9,9 +9,14 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-REQUESTS_IMP_ERR = None
+try:
+    from pyafc.afc import afc
 
-from pyafc.afc import afc
+    HAS_PYAFC = True
+    PYAFC_IMPORT_ERROR = None
+except ImportError as import_error:
+    HAS_PYAFC = False
+    PYAFC_IMPORT_ERROR = import_error
 
 
 def instantiate_afc_object(data=None):

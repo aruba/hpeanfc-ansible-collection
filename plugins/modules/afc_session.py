@@ -28,6 +28,13 @@ options:
         - Password of the user account
         type: str
         required: true
+    disable_tls_verification:
+        description:
+        - Disable TLS certificate verification when connecting to AFC.
+        - Only enable this for AFC instances using self-signed certificates.
+        type: bool
+        required: false
+        default: false
 author: Aruba Networks (@ArubaNetworks)
 """
 
@@ -76,8 +83,10 @@ headers:
     returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    HAS_PYAFC,
+    PYAFC_IMPORT_ERROR,
     instantiate_afc_object,
 )
 
@@ -86,7 +95,12 @@ def main():
     module_args = {
         "afc_ip": {"type": "str", "required": True},
         "afc_username": {"type": "str", "required": True},
-        "afc_password": {"type": "str", "required": True},
+        "afc_password": {"type": "str", "required": True, "no_log": True},
+        "disable_tls_verification": {
+            "type": "bool",
+            "required": False,
+            "default": False,
+        },
     }
 
     ansible_module = AnsibleModule(
@@ -94,10 +108,17 @@ def main():
         supports_check_mode=True,
     )
 
+    if not HAS_PYAFC:
+        ansible_module.fail_json(
+            msg=missing_required_lib("pyafc"),
+            exception=PYAFC_IMPORT_ERROR,
+        )
+
     # Get playbook's arguments
     ip = ansible_module.params["afc_ip"]
     username = ansible_module.params["afc_username"]
     password = ansible_module.params["afc_password"]
+    verify = not ansible_module.params["disable_tls_verification"]
 
     result = {"changed": False}
 
@@ -109,13 +130,16 @@ def main():
     message = ""
     auth_token = None
 
-    data = {"ip": ip, "username": username, "password": password}
-
-    auth_token = None
+    data = {
+        "ip": ip,
+        "username": username,
+        "password": password,
+        "verify": verify,
+    }
 
     afc_instance = instantiate_afc_object(data=data)
 
-    if afc_instance.client.is_closed is False:
+    if afc_instance.afc_connected:
         auth_token = afc_instance.auth_token
         message = "Successfully created afc_instance"
         status = True
