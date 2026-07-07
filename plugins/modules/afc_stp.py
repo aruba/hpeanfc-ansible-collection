@@ -184,8 +184,8 @@ def main():
     module_args = {
         "afc_ip": {"type": "str", "required": True},
         "afc_username": {"type": "str", "required": False},
-        "afc_password": {"type": "str", "required": False},
-        "auth_token": {"type": "str", "required": False},
+        "afc_password": {"type": "str", "required": False, "no_log": True},
+        "auth_token": {"type": "str", "required": False, "no_log": True},
         "operation": {"type": "str", "required": False},
         "data": {"type": "dict", "required": True},
     }
