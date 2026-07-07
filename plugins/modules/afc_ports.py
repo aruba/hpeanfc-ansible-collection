@@ -97,8 +97,8 @@ def main():
     module_args = dict(
         afc_ip=dict(type="str", required=True),
         afc_username=dict(type="str", required=False),
-        afc_password=dict(type="str", required=False),
-        auth_token=dict(type="str", required=False),
+        afc_password=dict(type="str", required=False, no_log=True),
+        auth_token=dict(type="str", required=False, no_log=True),
         ports_data=dict(type="dict", required=True)
     )
 
