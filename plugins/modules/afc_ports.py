@@ -38,6 +38,14 @@ options:
             Auth token from the create session playbook.
         type: str
         required: false
+    disable_tls_verification:
+        description: >
+            Disable TLS certificate verification when connecting to AFC.
+            Only enable this for AFC instances using self-signed
+            certificates.
+        type: bool
+        required: false
+        default: false
     fabric_name:
         description: >
             Name of the Fabric.
@@ -99,6 +107,7 @@ def main():
         afc_username=dict(type="str", required=False),
         afc_password=dict(type="str", required=False, no_log=True),
         auth_token=dict(type="str", required=False, no_log=True),
+        disable_tls_verification=dict(type="bool", required=False, default=False),
         ports_data=dict(type="dict", required=True)
     )
 
@@ -128,6 +137,8 @@ def main():
             "username": username,
             "password": password
         }
+
+    data["verify"] = not ansible_module.params["disable_tls_verification"]
 
     afc_instance = instantiate_afc_object(data=data)
 

@@ -28,6 +28,14 @@ options:
         - Password of the user account
         type: str
         required: false
+    disable_tls_verification:
+        description: >
+            Disable TLS certificate verification when connecting to AFC.
+            Only enable this for AFC instances using self-signed
+            certificates.
+        type: bool
+        required: false
+        default: false
     operation:
         description: >
             Operation to be performed on the SFlow configuration,
@@ -184,6 +192,11 @@ def main():
         "afc_username": {"type": "str", "required": False},
         "afc_password": {"type": "str", "required": False, "no_log": True},
         "auth_token": {"type": "str", "required": False, "no_log": True},
+        "disable_tls_verification": {
+            "type": "bool",
+            "required": False,
+            "default": False,
+        },
         "operation": {"type": "str", "required": False},
         "data": {"type": "dict", "required": True},
     }
@@ -225,6 +238,8 @@ def main():
     status = False
     changed = False
     message = ""
+
+    auth_data["verify"] = not ansible_module.params["disable_tls_verification"]
 
     afc_instance = instantiate_afc_object(data=auth_data)
 
