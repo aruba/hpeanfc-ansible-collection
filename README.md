@@ -112,6 +112,12 @@ If collection installed through Galaxy add `arubanetworks.afc` to your list of c
 
 The modules are designed to close the session for every username/password based action. In case we wish to re-use the session, the playbooks should only be receiving the auth_token as input var. If username and password are also sent along with the auth_token, the modules would assume that username and password combination was used and the session would get closed as a precautionary measure. This results in subsequent tasks to fail. Hence, the username and password should only be used with afc_session module and remaining playbooks should only get auth_token as input and should never be given username and password as input along with the auth_token.
 
+> **TLS verification:** the modules verify the AFC TLS certificate by default.
+> If your AFC presents a self-signed certificate, add
+> `disable_tls_verification: true` to `afc_session` (and to any module that
+> connects with a username/password). Only use this for trusted/lab
+> environments; see the release notes for details.
+
 ```yaml
 - hosts: all
   collections:

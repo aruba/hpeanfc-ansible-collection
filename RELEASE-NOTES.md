@@ -1,3 +1,49 @@
+# Unreleased
+
+### ⚠️ Breaking Changes
+
+#### TLS certificate verification is now enabled by default
+The collection relies on `pyafc`, which previously connected to AFC with TLS
+certificate verification **disabled**. Verification is now enabled by
+default, and every module exposes a new `disable_tls_verification` option.
+
+- **Who is affected:** any playbook targeting an AFC that presents a
+  self-signed or otherwise untrusted certificate (common in labs and on
+  appliances using the factory certificate).
+- **Symptom after upgrade:** the task fails with a TLS certificate
+  verification error instead of connecting.
+- **How to keep the previous behaviour:** set `disable_tls_verification: true`
+  on the module (or on `afc_session`). Only do this for trusted/lab
+  environments.
+
+  ```yaml
+  - name: Configure a VRF on a lab AFC using a self-signed certificate
+    arubanetworks.afc.afc_vrf:
+      afc_ip: "10.10.10.10"
+      afc_username: "admin"
+      afc_password: "password"
+      disable_tls_verification: true   # self-signed / lab certificate only
+      operation: create
+      data: "{{ vrf_data }}"
+  ```
+
+  The recommended long-term fix is to install a trusted certificate on AFC so
+  that verification can stay enabled (the default).
+
+### Security Fixes
+- Marked `afc_password` and `auth_token` as `no_log` in every module so the
+  secrets are no longer echoed in task output or logs.
+- Added the `disable_tls_verification` option (default `false`) to keep
+  certificate verification on by default while allowing an explicit opt-out.
+- `afc_session` now fails gracefully on a failed login and reports a missing
+  `pyafc` dependency via `missing_required_lib`.
+
+### Bug Fixes
+- Removed a duplicate AFC connection that ran before the `check_mode` guard in
+  several modules, so `--check` no longer connects to AFC.
+
+---
+
 # v1.0.0
 
 ### Overview
