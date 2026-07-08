@@ -30,9 +30,19 @@ default, and every module exposes a new `disable_tls_verification` option.
   The recommended long-term fix is to install a trusted certificate on AFC so
   that verification can stay enabled (the default).
 
+### Added
+- `afc_vlan`: new `vlan` type to manage the fabric-wide VLAN table in addition
+  to the existing `vlan_group` and `stretched_vlan` types. Supports
+  `operation: create`, `update` and `delete` to:
+  - create one or more VLANs (range syntax, e.g. `"10,20-30"`) and assign them
+    to one or more devices (by name or IP) or to a fabric scope
+    (`include_spine` / `exclude_spine`);
+  - assign existing VLAN(s) to additional devices and/or update attributes
+    (renaming is AFC-version dependent and may be a no-op on some releases);
+  - delete VLAN(s) from the whole fabric or unassign them from specific
+    devices only.
+
 ### Security Fixes
-- Marked `afc_password` and `auth_token` as `no_log` in every module so the
-  secrets are no longer echoed in task output or logs.
 - Added the `disable_tls_verification` option (default `false`) to keep
   certificate verification on by default while allowing an explicit opt-out.
 - `afc_session` now fails gracefully on a failed login and reports a missing
