@@ -125,6 +125,7 @@ convention:
 - [afc_syslog](afc_syslog.md) — Syslog configuration
 - [afc_sflow](afc_sflow.md) — sFlow configuration
 - [afc_aaa](afc_aaa.md) — AAA/RADIUS configuration
+- [afc_remote_file_server](afc_remote_file_server.md) — Remote File Transfer Server (SFTP/SCP) configuration
 
 ### Policy and resources
 
