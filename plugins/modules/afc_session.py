@@ -35,29 +35,36 @@ options:
         type: bool
         required: false
         default: false
+notes:
+- When re-using an auth_token, do not also provide afc_username and
+  afc_password. If they are provided, the session is closed because
+  authentication is considered done via username and password only.
 author: Aruba Networks (@ArubaNetworks)
 """
 
 
 EXAMPLES = r"""
--   name: Create Session
+-   name: Create a session and capture the auth_token
     arubanetworks.afc.afc_session:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
+        disable_tls_verification: true
     register: reg_afc_instance
 
--   name: Capture the auth_token
+-   name: Store the auth_token in a fact for re-use
     ansible.builtin.set_fact:
-        auth_token: "{{ reg_afc_instance["auth_token"] }}"
+        auth_token: "{{ reg_afc_instance.auth_token }}"
 
--   name: Create Fabric using token
+-   name: Re-use the session with another module (token authentication)
     arubanetworks.afc.afc_fabric:
         afc_ip: "10.10.10.10"
         auth_token: "{{ auth_token }}"
-        fabric_name: "Aruba-Fabric"
-        fabric_timezone: "Europe/London"
-        operation: "create"
+        disable_tls_verification: true
+        operation: create
+        data:
+            name: Aruba-Fabric
+            timezone: Europe/London
 """
 
 

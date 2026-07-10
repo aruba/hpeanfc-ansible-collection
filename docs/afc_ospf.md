@@ -1,60 +1,298 @@
 # module: afc_ospf
 
-Description: This module creates or deletes an OSPF configuration in the specified fabric.
+Description: This module creates or deletes an OSPF configuration.
 
 ##### ARGUMENTS
 
 ```YAML
 afc_ip:
-    description: >
-        IP address of the Aruba Fabric Composer.
-    type: str
-    required: true
+  description:
+  - IP address of the HPE ANW Fabric Composer.
+  type: str
+  required: true
 afc_username:
-    description:
-    - User account having write permission on the Aruba Fabric Composer
-    type: str
-    required: false
+  description:
+  - User account having write permission on the HPE ANW Fabric Composer.
+  type: str
+  required: false
 afc_password:
-    description:
-    - Password of the user account
-    type: str
-    required: false
+  description:
+  - Password of the user account.
+  type: str
+  required: false
 auth_token:
-    description: >
-        Auth token from the create session playbook.
-    type: str
-    required: false
-fabric_name:
-    description: >
-        Name of the Fabric.
-    type: str
-    required: true
-vrf_name:
-    description: >
-        Name of the VRF in which OSPF objects are to be created or deleted from.
-    type: str
-    required: true
-ospf_object_name:
-    description: >
-        Name of the OSPF object object that will be created or deleted from.
-    type: str
-    required: true
-ospf_object_type:
-    description: >
-        Type of the OSPF Object object. Options router, area, interface.
-    type: str
-    required: true
-ospf_object_data:
-    description: >
-        Object specific data for OSPF router or area or interface. Structure is provided in the example.
-    type: dict
-    required: true
+  description:
+  - Auth token from the create session playbook.
+  type: str
+  required: false
+disable_tls_verification:
+  description:
+  - Disable TLS certificate verification when connecting to AFC.
+  - Only enable this for AFC instances using self-signed certificates.
+  type: bool
+  required: false
+  default: false
 operation:
-    description: >
-        Operation to be performed on the OSPF object, create or delete.
-    type: str
-    required: true
+  description:
+  - Operation to be performed on the OSPF object, create or delete.
+  type: str
+  choices:
+  - create
+  required: true
+data:
+  description:
+  - Object specific data for OSPF router, area, or interface.
+  type: dict
+  required: true
+  suboptions:
+    type:
+      description:
+      - Type of OSPF item.
+      type: str
+      choices:
+      - router
+      - area
+      - interface
+      required: true
+    fabric:
+      description:
+      - Fabric Name.
+      type: str
+      required: true
+    vrf:
+      description:
+      - VRF Name.
+      type: str
+      required: true
+    name:
+      description:
+      - OSPF Workflow Name.
+      type: str
+      required: true
+    enable:
+      description:
+      - OSPF Router's Status.
+      type: bool
+      default: true
+      required: false
+    id:
+      description:
+      - OSPF Router ID.
+      type: int
+      default: 1
+      required: false
+    redistribute:
+      description:
+      - OSPF Router specific. OSPF Redistribution rule.
+      type: dict
+      required: false
+      suboptions:
+        redistribute_static:
+          description:
+          - Redistribute Static Routes.
+          type: bool
+          default: false
+          required: false
+        redistribute_connected:
+          description:
+          - Redistribute Connected.
+          type: bool
+          default: true
+          required: false
+        redistribute_local:
+          description:
+          - Redistribute Local.
+          type: bool
+          default: true
+          required: false
+        redistribute_bgp:
+          description:
+          - Redistribute BGP.
+          type: bool
+          default: false
+          required: false
+    redistribute_route_map:
+      description:
+      - OSPF Router specific. OSPF Redistribution Route Map rule.
+      type: dict
+      required: false
+      suboptions:
+        redistribute_connected_route_map:
+          description:
+          - Redistribute Connected Routes Route Map's name.
+          type: str
+          required: false
+        redistribute_local_route_map:
+          description:
+          - Redistribute Local Routes Route Map's name.
+          type: str
+          required: false
+    maximum_paths:
+      description:
+      - OSPF Router Specific. OSPF Max Paths.
+      type: int
+      default: 8
+      required: false
+    max_metric_router_lsa:
+      description:
+      - Advertise Router-LSAs with maximum metric value.
+      type: bool
+      default: true
+      required: false
+    max_metric_include_stub:
+      description:
+      - Advertise Router-LSAs with max metric for stub links.
+      type: bool
+      default: true
+      required: false
+    max_metric_on_startup:
+      description:
+      - Time in seconds to advertise Router-LSAs with max metric after startup.
+      type: int
+      required: false
+    passive_interface_default:
+      description:
+      - Configure all OSPF-enabled interfaces as passive.
+      type: bool
+      default: true
+      required: false
+    trap_enable:
+      description:
+      - Enable OSPF SNMP Traps.
+      type: bool
+      default: true
+      required: false
+    gr_ignore_lost_interface:
+      description:
+      - Ignore lost OSPF interfaces during graceful restart.
+      type: bool
+      default: false
+      required: false
+    gr_restart_interval:
+      description:
+      - Max interval in seconds that another router should wait.
+      type: int
+      required: false
+    distance:
+      description:
+      - Configure OSPF administrative distance.
+      type: int
+      required: false
+    default_metric:
+      description:
+      - Configure default metric of redistributed routes.
+      type: int
+      required: false
+    default_information:
+      description:
+      - Allow a default route to be advertised.
+      type: str
+      choices:
+      - disable
+      - originate
+      - always_originate
+      default: disable
+      required: false
+    area_id:
+      description:
+      - OSPF Area ID.
+      type: int
+      default: 0
+      required: false
+    area_type:
+      description:
+      - OSPF Area Type.
+      type: str
+      choices:
+      - standard
+      - nssa
+      - stub
+      - stub_no_summary
+      - nssa_no_summary
+      default: standard
+      required: false
+    priority:
+      description:
+      - OSPF Priority.
+      type: int
+      default: 1
+      required: false
+    process:
+      description:
+      - OSPF Process ID.
+      type: int
+      default: 1
+      required: false
+    hello_interval:
+      description:
+      - Interval period for hello messages in seconds.
+      type: int
+      default: 10
+      required: false
+    dead_interval:
+      description:
+      - Dead period for hello messages in seconds.
+      type: int
+      default: 40
+      required: false
+    mtu_size:
+      description:
+      - OSPF MTU size in bytes.
+      type: int
+      default: 1500
+      required: false
+    ignore_mtu_mismatch:
+      description:
+      - Ignore MTU mismatch.
+      type: bool
+      default: false
+      required: false
+    passive_mode:
+      description:
+      - Enable OSPF Passive Interface.
+      type: bool
+      default: false
+      required: false
+    authentication_value:
+      description:
+      - Simple-text authentication value.
+      type: str
+      required: false
+    md5_list:
+      description:
+      - MD5 authentication key value pairs.
+      type: list
+      elements: str
+      required: false
+    authentication_type:
+      description:
+      - Authentication type.
+      type: str
+      choices:
+      - simple-text
+      - message-digest
+      required: false
+    network_type:
+      description:
+      - OSPF Network type.
+      type: str
+      choices:
+      - ospf_iftype_pointopoint
+      - ospf_iftype_broadcast
+      - ospf_iftype_loopback
+      - ospf_iftype_none
+      required: true
+    bfd:
+      description:
+      - Enable Bidirectional Forwarding Detection.
+      type: bool
+      required: false
+    switches:
+      description:
+      - List of Switches.
+      type: list
+      elements: str
+      required: true
 ```
 
 ##### EXAMPLES
@@ -65,156 +303,99 @@ operation:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Router"
-        ospf_object_type: "router"
-        ospf_object_data:
-            instance: "Test-OSPF-Router"
-            switches: "10.1.66.11"
-            id: 10
+        operation: "create"
+        data:
+            type: router
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
+            name: 'Test-OSPF-Router'
+            switches:
+                - '10.10.10.11'
+                - '10.10.10.12'
+            id: 1
             redistribute:
                 redistribute_bgp: false
-        operation: "create"
-
--   name: Delete OSPF Router using username and password
-    arubanetworks.afc.afc_ospf:
-        afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Router"
-        ospf_object_type: "router"
-        operation: "delete"
 
 -   name: Create OSPF Area using username and password
     arubanetworks.afc.afc_ospf:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Area"
-        ospf_object_type: "area"
-        ospf_object_data:
-            ospf_router: "Test-OSPF-Router"
-            switches: "10.1.66.11"
-            area_id: 1
         operation: "create"
-
--   name: Delete OSPF Area using username and password
-    arubanetworks.afc.afc_ospf:
-        afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Area"
-        ospf_object_type: "area"
-        operation: "delete"
+        data:
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
+            name: 'Test-OSPF-Area'
+            type: area
+            ospf_router: "Test-OSPF-Router"
+            switches:
+                - '10.10.10.11'
+                - '10.10.10.12'
+            area_id: 1
 
 -   name: Create OSPF Interface using username and password
     arubanetworks.afc.afc_ospf:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Interface"
-        ospf_object_type: "interface"
-        ospf_object_data:
-            router: "10.10.10.254"
-            area: "0.0.0.1"
-            interface: "1/1/29"
-            network_type: "ospf_iftype_pointopoint"
-            process: 10
         operation: "create"
-
--   name: Delete OSPF Interface using username and password
-    arubanetworks.afc.afc_ospf:
-        afc_ip: "10.10.10.10"
-        afc_username: "afc_admin"
-        afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Interface"
-        ospf_object_type: "interface"
-        operation: "delete"
+        data:
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
+            name: 'Test-OSPF-Interface'
+            router: '10.10.10.11'
+            type: interface
+            area: "0.0.0.0"
+            interface: "1/1/14"
+            network_type: "ospf_iftype_pointopoint"
+            process: 1
 
 -   name: Create OSPF Router using token
     arubanetworks.afc.afc_ospf:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Router"
-        ospf_object_type: "router"
-        ospf_object_data:
-            instance: "Test-OSPF-Router"
-            switches: "10.1.66.11"
-            id: 10
+        operation: "create"
+        data:
+            type: router
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
+            name: 'Test-OSPF-Router'
+            switches:
+                - '10.10.10.11'
+                - '10.10.10.12'
+            id: 1
             redistribute:
                 redistribute_bgp: false
-        operation: "create"
-
--   name: Delete OSPF Router using token
-    arubanetworks.afc.afc_ospf:
-        afc_ip: "10.10.10.10"
-        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Router"
-        ospf_object_type: "router"
-        operation: "delete"
 
 -   name: Create OSPF Area using token
     arubanetworks.afc.afc_ospf:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Area"
-        ospf_object_type: "area"
-        ospf_object_data:
-            ospf_router: "Test-OSPF-Router"
-            switches: "10.1.66.11"
-            area_id: 1
         operation: "create"
-
--   name: Delete OSPF Area using token
-    arubanetworks.afc.afc_ospf:
-        afc_ip: "10.10.10.10"
-        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Area"
-        ospf_object_type: "area"
-        operation: "delete"
+        data:
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
+            name: 'Test-OSPF-Area'
+            type: area
+            ospf_router: "Test-OSPF-Router"
+            switches:
+                - '10.10.10.11'
+                - '10.10.10.12'
+            area_id: 1
 
 -   name: Create OSPF Interface using token
     arubanetworks.afc.afc_ospf:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Interface"
-        ospf_object_type: "interface"
-        ospf_object_data:
-            router: "10.10.10.254"
-            area: "0.0.0.1"
-            interface: "1/1/29"
-            network_type: "ospf_iftype_pointopoint"
-            process: 10
         operation: "create"
-
--   name: Delete OSPF Interface using token
-    arubanetworks.afc.afc_ospf:
-        afc_ip: "10.10.10.10"
-        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "Aruba-VRF"
-        ospf_object_name: "Test-OSPF-Interface"
-        ospf_object_type: "interface"
-        operation: "delete"
+        data:
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
+            name: 'Test-OSPF-Interface'
+            router: '10.10.10.11'
+            type: interface
+            area: "0.0.0.0"
+            interface: "1/1/14"
+            network_type: "ospf_iftype_pointopoint"
+            process: 1
 ```

@@ -42,6 +42,19 @@ default, and every module exposes a new `disable_tls_verification` option.
   - delete VLAN(s) from the whole fabric or unassign them from specific
     devices only.
 
+### Documentation
+- Regenerated all module reference pages under `docs/` from each module's
+  actual argument spec and examples, so the documented playbook format now
+  matches the modules (top-level `operation`, nested `data`, and
+  `disable_tls_verification`).
+- Added a `docs/README.md` index describing the standard playbook usage
+  pattern (session re-use, `operation`/`data`, TLS option).
+- Added reference pages for `afc_lag_interfaces`, `afc_licenses`,
+  `afc_multifabrics` and `afc_physical_interfaces`.
+- Updated the `afc_session` example (replaced the stale flat-parameter
+  `afc_fabric` snippet with the current `data` format, fixed invalid nested
+  quotes) and added examples to `afc_integrations`.
+
 ### Security Fixes
 - Added the `disable_tls_verification` option (default `false`) to keep
   certificate verification on by default while allowing an explicit opt-out.
@@ -51,6 +64,8 @@ default, and every module exposes a new `disable_tls_verification` option.
 ### Bug Fixes
 - Removed a duplicate AFC connection that ran before the `check_mode` guard in
   several modules, so `--check` no longer connects to AFC.
+- Fixed an invalid YAML example in `afc_switches` (broken indentation and a
+  duplicate `boot_partition` key).
 
 ---
 

@@ -1,40 +1,62 @@
 # module: afc_resource_pool
 
-Description: This module creates or deletes a Resource Pool configuration.
+Description: This module create or delete the resource pool.
 
 ##### ARGUMENTS
 
 ```YAML
 afc_ip:
-    description: >
-        IP address of the Aruba Fabric Composer.
-    type: str
-    required: true
+  description: IP address of the HPE ANW Fabric Composer.
+  type: str
+  required: true
 afc_username:
-    description:
-    - User account having write permission on the Aruba Fabric Composer
-    type: str
-    required: false
+  description:
+  - User account having write permission on the HPE ANW Fabric Composer
+  type: str
+  required: false
 afc_password:
-    description:
-    - Password of the user account
-    type: str
-    required: false
+  description:
+  - Password of the user account
+  type: str
+  required: false
 auth_token:
-    description: >
-        Auth token from the create session playbook.
-    type: str
-    required: false
-resource_pool_name:
-    description: >
-        Name of the resource pool.
-    type: str
-    required: true
-resource_pool_data:
-    description: >
-        Resource pool data containing type and pool_ranges. Structure is provided in the example.
-    type: dict
-    required: true
+  description: Auth token from the create session playbook.
+  type: str
+  required: false
+disable_tls_verification:
+  description: Disable TLS certificate verification when connecting to AFC. Only
+    enable this for AFC instances using self-signed certificates.
+  type: bool
+  required: false
+  default: false
+operation:
+  description: Create or Delete.
+  type: str
+  choices:
+  - create
+  - delete
+  required: true
+data:
+  description: Resource pool data containing name, type and pool_ranges. Structure
+    is provided in the example.
+  type: dict
+  suboptions:
+    name:
+      description: Resource Pool Name
+      type: str
+      required: true
+    type:
+      description: Resource Pool type
+      type: str
+      choices:
+      - IPv4
+      - MAC
+      required: false
+    pool_ranges:
+      description: Pool Range.
+      type: str
+      required: false
+  required: true
 ```
 
 ##### EXAMPLES
@@ -45,9 +67,9 @@ resource_pool_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        resource_pool_name: "IP POOL"
         operation: "create"
-        resource_pool_data:
+        data:
+            name: "IP POOL"
             type: "IPv4"
             pool_ranges: "10.10.20.0/24"
 
@@ -56,9 +78,9 @@ resource_pool_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        resource_pool_name: "MAC POOL"
         operation: "create"
-        resource_pool_data:
+        data:
+            name: "MAC POOL"
             type: "MAC"
             pool_ranges: "00:00:00:00:00:01-00:00:00:00:00:FF"
 
@@ -67,16 +89,17 @@ resource_pool_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        resource_pool_name: "IP POOL"
         operation: "delete"
+        data:
+            name: "IP POOL"
 
 -   name: Create resource pool using token
     arubanetworks.afc.afc_resource_pool:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        resource_pool_name: "IP POOL"
         operation: "create"
-        resource_pool_data:
+        data:
+            name: "IP POOL"
             type: "IPv4"
             pool_ranges: "10.10.20.0/24"
 
@@ -84,6 +107,7 @@ resource_pool_data:
     arubanetworks.afc.afc_resource_pool:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        resource_pool_name: "IP POOL"
         operation: "delete"
+        data:
+            name: "IP POOL"
 ```

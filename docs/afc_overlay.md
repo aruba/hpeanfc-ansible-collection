@@ -1,56 +1,75 @@
 # module: afc_overlay
 
-Description: This module creates or deletes an overlay configuration in the specified fabric.
+Description: This module applies an overlay configuration in the specified fabric and vrf.
 
 ##### ARGUMENTS
 
 ```YAML
 afc_ip:
-    description: >
-        IP address of the Aruba Fabric Composer.
-    type: str
-    required: true
+  description: IP address of the HPE ANW Fabric Composer.
+  type: str
+  required: true
 afc_username:
-    description:
-    - User account having write permission on the Aruba Fabric Composer
-    type: str
-    required: false
+  description:
+  - User account having write permission on the HPE ANW Fabric Composer
+  type: str
+  required: false
 afc_password:
-    description:
-    - Password of the user account
-    type: str
-    required: false
+  description:
+  - Password of the user account
+  type: str
+  required: false
 auth_token:
-    description: >
-        Auth token from the create session playbook.
-    type: str
-    required: false
-fabric_name:
-    description: >
-        Name of the Fabric where an overlay configuration will be created or reapplied.
-    type: str
-    required: true
-vrf_name:
-    description: >
-        Name of the VRF where overlay configuratoin needs to be applied.
-    type: str
-    required: true
+  description: Auth token from the create session playbook.
+  type: str
+  required: false
+disable_tls_verification:
+  description: Disable TLS certificate verification when connecting to AFC. Only
+    enable this for AFC instances using self-signed certificates.
+  type: bool
+  required: false
+  default: false
 operation:
-    description: >
-        Operation to be performed on the Overlay, create or reapply.
-    type: str
-    required: true
-overlay_name:
-    description: >
-        Name of the overlay.
-    type: str
-    required: true
-overlay_data:
-    description: >
-        Overlay configuration data. The mandatory key bgp_type within the dict can have value internal or external.
-        Structure is provided in the example.
-    type: dict
-    required: true
+  description: Operation to be performed on the Overlay, create or reapply.
+  type: str
+  choices:
+  - create
+  - delete
+  required: true
+data:
+  description: Overlay configuration data. The mandatory key bgp_type within the
+    dict ca have value "internal" or "external". Structure is provided in the
+    example.
+  type: dict
+  suboptions:
+    name:
+      description: Overlay Workflow Name
+      type: str
+      required: true
+    fabric:
+      description: Fabric Name
+      type: str
+      required: true
+    vrf:
+      description: VRF Name
+      type: str
+      required: true
+    ipv4_address:
+      description: IPv4 Resource Pool used for Loopbacks
+      type: str
+      required: true
+    spine_leaf_asn:
+      description: AS Number used for BGP configuration
+      type: str
+      required: true
+    bgp_type:
+      description: BGP Type used for Overlay configuration
+      type: str
+      choices:
+      - internal
+      - external
+      required: true
+  required: true
 ```
 
 ##### EXAMPLES
@@ -61,11 +80,11 @@ overlay_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
-        overlay_name: "Test-Overlay"
         operation: "create"
-        overlay_data:
+        data:
+            name: "Test-Overlay"
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
             ipv4_address: 'IP POOL'
             spine_leaf_asn: "65001"
             bgp_type: 'internal'
@@ -75,20 +94,21 @@ overlay_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
-        operation: "reapply"
-        overlay_name: "Test-Overlay"
+        operation: reapply
+        data:
+            name: "Test-Overlay"
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
 
 -   name: Create an overlay configuration using token
     arubanetworks.afc.afc_overlay:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
-        overlay_name: "Test-Overlay"
         operation: "create"
-        overlay_data:
+        data:
+            name: "Test-Overlay"
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
             ipv4_address: 'IP POOL'
             spine_leaf_asn: "65001"
             bgp_type: 'internal'
@@ -97,8 +117,9 @@ overlay_data:
     arubanetworks.afc.afc_overlay:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
-        operation: "reapply"
-        overlay_name: "Test-Overlay"
+        operation: reapply
+        data:
+            name: "Test-Overlay"
+            fabric: "Aruba-Fabric"
+            vrf: "Aruba-VRF"
 ```

@@ -1,55 +1,69 @@
 # module: afc_underlay
 
-Description: This module creates or deletes an underlay in the specified VRF.
+Description: This module applies an underlay configuration in the specified fabric and vrf.
 
 ##### ARGUMENTS
 
 ```YAML
 afc_ip:
-    description: >
-        IP address of the Aruba Fabric Composer.
-    type: str
-    required: true
+  description: IP address of the HPE ANW Fabric Composer.
+  type: str
+  required: true
 afc_username:
-    description:
-    - User account having write permission on the Aruba Fabric Composer
-    type: str
-    required: false
+  description:
+  - User account having write permission on the HPE ANW Fabric Composer
+  type: str
+  required: false
 afc_password:
-    description:
-    - Password of the user account
-    type: str
-    required: false
+  description:
+  - Password of the user account
+  type: str
+  required: false
 auth_token:
-    description: >
-        Auth token from the create session playbook.
-    type: str
-    required: false
-fabric_name:
-    description: >
-        Name of the Fabric where an underlay configuration will be created or deleted from.
-    type: str
-    required: true
-vrf_name:
-    description: >
-        Name of the VRF where underlay configuratoin needs to be applied.
-    type: str
-    required: true
+  description: Auth token from the create session playbook.
+  type: str
+  required: false
+disable_tls_verification:
+  description: Disable TLS certificate verification when connecting to AFC. Only
+    enable this for AFC instances using self-signed certificates.
+  type: bool
+  required: false
+  default: false
 operation:
-    description: >
-        Operation to be performed on the Underlay, create or reapply.
-    type: str
-    required: true
-underlay_name:
-    description: >
-        Name of the underlay.
-    type: str
-    required: true
-underlay_data:
-    description: >
-        Underlay configuration data. The mandatory structure is provided in the example.
-    type: dict
-    required: false
+  description: Operation to be performed on the Underlay, create or reapply.
+  type: str
+  choices:
+  - create
+  - reapply
+  required: true
+data:
+  description: Underlay data. The structure is provided in the example.
+  type: dict
+  suboptions:
+    name:
+      description: VRF Name
+      type: str
+      required: true
+    fabric:
+      description: Fabric Name
+      type: str
+      required: true
+    ipv4_address:
+      description: IPv4 Resource Pool used to create Loopbacks
+      type: int
+      required: true
+    transit_vlan:
+      description: OSPF Transit VLAN between VSX peers
+      type: int
+      required: true
+    underlay_type:
+      description: Underlay's type
+      type: str
+      choices:
+      - OSPF
+      - EBGP
+      required: true
+  required: true
 ```
 
 ##### EXAMPLES
@@ -60,11 +74,10 @@ underlay_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
         operation: "create"
-        underlay_name: "Test-underlay"
-        underlay_data:
+        data:
+            name: "Test-underlay"
+            fabric: "Aruba-Fabric"
             ipv4_address: 'IP POOL'
             transit_vlan: 120
             underlay_type: 'OSPF'
@@ -74,20 +87,19 @@ underlay_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
         operation: "reapply"
-        underlay_name: "Test-underlay"
+        data:
+            name: "Test-underlay"
+            fabric: "Aruba-Fabric"
 
 -   name: Create an underlay configuration using token
     arubanetworks.afc.afc_underlay:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
         operation: "create"
-        underlay_name: "Test-underlay"
-        underlay_data:
+        data:
+            name: "Test-underlay"
+            fabric: "Aruba-Fabric"
             ipv4_address: 'IP POOL'
             transit_vlan: 120
             underlay_type: 'OSPF'
@@ -96,8 +108,8 @@ underlay_data:
     arubanetworks.afc.afc_underlay:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        fabric_name: "Aruba-Fabric"
-        vrf_name: "default"
         operation: "reapply"
-        underlay_name: "Test-underlay"
+        data:
+            name: "Test-underlay"
+            fabric: "Aruba-Fabric"
 ```
