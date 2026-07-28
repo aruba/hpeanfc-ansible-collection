@@ -94,6 +94,7 @@ convention:
 - [afc_underlay](afc_underlay.md) — underlay configuration
 - [afc_overlay](afc_overlay.md) — overlay configuration
 - [afc_evpn](afc_evpn.md) — EVPN configuration
+- [afc_evpn_settings](afc_evpn_settings.md) — global (fabric-wide) EVPN settings
 - [afc_vsx](afc_vsx.md) — VSX configuration
 
 ### Switches and interfaces
