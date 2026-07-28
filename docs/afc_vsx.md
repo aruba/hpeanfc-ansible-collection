@@ -55,16 +55,26 @@ data:
       type: str
       required: true
     keepalive_ip_pool_range:
-      description: IPv4 Resource Pool used for KeepAlive
+      description: IPv4 Resource Pool used for KeepAlive. Not required when
+        keep_alive_interface_mode is management_interface.
       type: str
       required: false
     keep_alive_interface_mode:
-      description: IP interface mode used for Keep alive interface
+      description: IP interface mode used for Keep alive interface. The
+        management_interface mode (keep alive over the management VRF) is only
+        available from AFC version 7.3 onwards.
       type: str
       choices:
       - routed
       - loopback
+      - management_interface
       required: true
+    keep_alive_vrf:
+      description: Name of the VRF used for the keep alive interface (for example
+        mgmt). Using the management (mgmt) VRF is only available from AFC version
+        7.3 onwards.
+      type: str
+      required: false
   required: true
 ```
 
@@ -83,6 +93,19 @@ data:
             system_mac_range: "MAC POOL"
             keepalive_ip_pool_range: "IP POOL"
             keep_alive_interface_mode: "loopback"
+
+-   name: Create VSX over the management (mgmt) VRF (AFC 7.3+)
+    arubanetworks.afc.afc_vsx:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        operation: "create"
+        data:
+            name: "Test-VSX"
+            fabric: "Aruba-Fabric"
+            system_mac_range: "MAC POOL"
+            keep_alive_interface_mode: "management_interface"
+            keep_alive_vrf: "mgmt"
 
 -   name: Reapply VSX using username and password
     arubanetworks.afc.afc_vsx:
