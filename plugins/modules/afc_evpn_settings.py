@@ -110,6 +110,19 @@ EXAMPLES = r"""
         data:
             fabric: "Aruba-Fabric"
             arp_suppression: true
+
+-   name: Enable Redistribute Local SVI on specific devices only (not the whole fabric)
+    arubanetworks.afc.afc_evpn_settings:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        operation: "update"
+        data:
+            fabric: "Aruba-Fabric"
+            local_svi: true
+            switches:
+                - "DC-8100-Leaf5"
+                - "DC-8100-Leaf6"
 """
 
 RETURN = r"""
