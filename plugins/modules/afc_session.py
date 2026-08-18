@@ -28,29 +28,43 @@ options:
         - Password of the user account
         type: str
         required: true
+    disable_tls_verification:
+        description:
+        - Disable TLS certificate verification when connecting to AFC.
+        - Only enable this for AFC instances using self-signed certificates.
+        type: bool
+        required: false
+        default: false
+notes:
+- When re-using an auth_token, do not also provide afc_username and
+  afc_password. If they are provided, the session is closed because
+  authentication is considered done via username and password only.
 author: Aruba Networks (@ArubaNetworks)
 """
 
 
 EXAMPLES = r"""
--   name: Create Session
+-   name: Create a session and capture the auth_token
     arubanetworks.afc.afc_session:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
+        disable_tls_verification: true
     register: reg_afc_instance
 
--   name: Capture the auth_token
+-   name: Store the auth_token in a fact for re-use
     ansible.builtin.set_fact:
-        auth_token: "{{ reg_afc_instance["auth_token"] }}"
+        auth_token: "{{ reg_afc_instance.auth_token }}"
 
--   name: Create Fabric using token
+-   name: Re-use the session with another module (token authentication)
     arubanetworks.afc.afc_fabric:
         afc_ip: "10.10.10.10"
         auth_token: "{{ auth_token }}"
-        fabric_name: "Aruba-Fabric"
-        fabric_timezone: "Europe/London"
-        operation: "create"
+        disable_tls_verification: true
+        operation: create
+        data:
+            name: Aruba-Fabric
+            timezone: Europe/London
 """
 
 
@@ -76,8 +90,10 @@ headers:
     returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    HAS_PYAFC,
+    PYAFC_IMPORT_ERROR,
     instantiate_afc_object,
 )
 
@@ -86,7 +102,12 @@ def main():
     module_args = {
         "afc_ip": {"type": "str", "required": True},
         "afc_username": {"type": "str", "required": True},
-        "afc_password": {"type": "str", "required": True},
+        "afc_password": {"type": "str", "required": True, "no_log": True},
+        "disable_tls_verification": {
+            "type": "bool",
+            "required": False,
+            "default": False,
+        },
     }
 
     ansible_module = AnsibleModule(
@@ -94,10 +115,17 @@ def main():
         supports_check_mode=True,
     )
 
+    if not HAS_PYAFC:
+        ansible_module.fail_json(
+            msg=missing_required_lib("pyafc"),
+            exception=PYAFC_IMPORT_ERROR,
+        )
+
     # Get playbook's arguments
     ip = ansible_module.params["afc_ip"]
     username = ansible_module.params["afc_username"]
     password = ansible_module.params["afc_password"]
+    verify = not ansible_module.params["disable_tls_verification"]
 
     result = {"changed": False}
 
@@ -109,13 +137,16 @@ def main():
     message = ""
     auth_token = None
 
-    data = {"ip": ip, "username": username, "password": password}
-
-    auth_token = None
+    data = {
+        "ip": ip,
+        "username": username,
+        "password": password,
+        "verify": verify,
+    }
 
     afc_instance = instantiate_afc_object(data=data)
 
-    if afc_instance.client.is_closed is False:
+    if afc_instance.afc_connected:
         auth_token = afc_instance.auth_token
         message = "Successfully created afc_instance"
         status = True

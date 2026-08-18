@@ -33,6 +33,13 @@ options:
       - Auth token from the create session playbook.
     type: str
     required: false
+  disable_tls_verification:
+    description:
+      - Disable TLS certificate verification when connecting to AFC.
+      - Only enable this for AFC instances using self-signed certificates.
+    type: bool
+    required: false
+    default: false
   operation:
     description:
       - Operation to be performed on the integration configuration.
@@ -147,8 +154,41 @@ author:
   - Aruba Networks (@ArubaNetworks)
 """
 
+EXAMPLES = r"""
+-   name: Configure a VMware vSphere integration using username and password
+    arubanetworks.afc.afc_integrations:
+        afc_ip: "10.10.10.10"
+        afc_username: "admin"
+        afc_password: "password"
+        operation: create
+        data:
+            type: vm_vsphere
+            host: "10.20.30.40"
+            username: "administrator@vsphere.local"
+            password: "vsphere_password"
+            enabled: true
+            auto_discovery: true
+            vlan_provisioning: true
+            vlan_range: "100-200"
+
+-   name: Configure a Pensando PSM integration using an existing session
+    arubanetworks.afc.afc_integrations:
+        afc_ip: "10.10.10.10"
+        auth_token: "{{ auth_token }}"
+        disable_tls_verification: true
+        operation: create
+        data:
+            type: pensando_psm
+            host: "10.20.30.50"
+            username: "admin"
+            password: "psm_password"
+            enabled: true
+"""
+
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    afc_argument_spec,
+    build_auth_data,
     instantiate_afc_object,
 )
 from pyafc.integrations import integrations
@@ -156,10 +196,7 @@ from pyafc.integrations import integrations
 
 def main():
     module_args = {
-        "afc_ip": {"type": "str", "required": True},
-        "afc_username": {"type": "str", "required": False},
-        "afc_password": {"type": "str", "required": False},
-        "auth_token": {"type": "str", "required": False},
+        **afc_argument_spec(),
         "operation": {"type": "str", "required": False},
         "data": {"type": "dict", "required": True},
     }
@@ -170,21 +207,10 @@ def main():
     )
 
     # Get playbook's arguments
-    token = None
-    ip = ansible_module.params["afc_ip"]
-    if "afc_username" in list(ansible_module.params.keys()):
-        username = ansible_module.params["afc_username"]
-    if "afc_password" in list(ansible_module.params.keys()):
-        password = ansible_module.params["afc_password"]
-    if "auth_token" in list(ansible_module.params.keys()):
-        token = ansible_module.params["auth_token"]
+    username = ansible_module.params["afc_username"]
+    password = ansible_module.params["afc_password"]
     operation = ansible_module.params["operation"]
     data = ansible_module.params["data"]
-
-    if token is not None:
-        auth_data = {"ip": ip, "auth_token": token}
-    else:
-        auth_data = {"ip": ip, "username": username, "password": password}
 
     result = {"changed": False}
 
@@ -194,6 +220,8 @@ def main():
     status = False
     changed = False
     message = ""
+
+    auth_data = build_auth_data(ansible_module)
 
     afc_instance = instantiate_afc_object(data=auth_data)
 

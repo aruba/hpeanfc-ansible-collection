@@ -1,3 +1,74 @@
+# Unreleased
+
+### ⚠️ Breaking Changes
+
+#### TLS certificate verification is now enabled by default
+The collection relies on `pyafc`, which previously connected to AFC with TLS
+certificate verification **disabled**. Verification is now enabled by
+default, and every module exposes a new `disable_tls_verification` option.
+
+- **Who is affected:** any playbook targeting an AFC that presents a
+  self-signed or otherwise untrusted certificate (common in labs and on
+  appliances using the factory certificate).
+- **Symptom after upgrade:** the task fails with a TLS certificate
+  verification error instead of connecting.
+- **How to keep the previous behaviour:** set `disable_tls_verification: true`
+  on the module (or on `afc_session`). Only do this for trusted/lab
+  environments.
+
+  ```yaml
+  - name: Configure a VRF on a lab AFC using a self-signed certificate
+    arubanetworks.afc.afc_vrf:
+      afc_ip: "10.10.10.10"
+      afc_username: "admin"
+      afc_password: "password"
+      disable_tls_verification: true   # self-signed / lab certificate only
+      operation: create
+      data: "{{ vrf_data }}"
+  ```
+
+  The recommended long-term fix is to install a trusted certificate on AFC so
+  that verification can stay enabled (the default).
+
+### Added
+- `afc_vlan`: new `vlan` type to manage the fabric-wide VLAN table in addition
+  to the existing `vlan_group` and `stretched_vlan` types. Supports
+  `operation: create`, `update` and `delete` to:
+  - create one or more VLANs (range syntax, e.g. `"10,20-30"`) and assign them
+    to one or more devices (by name or IP) or to a fabric scope
+    (`include_spine` / `exclude_spine`);
+  - assign existing VLAN(s) to additional devices and/or update attributes
+    (renaming is AFC-version dependent and may be a no-op on some releases);
+  - delete VLAN(s) from the whole fabric or unassign them from specific
+    devices only.
+
+### Documentation
+- Regenerated all module reference pages under `docs/` from each module's
+  actual argument spec and examples, so the documented playbook format now
+  matches the modules (top-level `operation`, nested `data`, and
+  `disable_tls_verification`).
+- Added a `docs/README.md` index describing the standard playbook usage
+  pattern (session re-use, `operation`/`data`, TLS option).
+- Added reference pages for `afc_lag_interfaces`, `afc_licenses`,
+  `afc_multifabrics` and `afc_physical_interfaces`.
+- Updated the `afc_session` example (replaced the stale flat-parameter
+  `afc_fabric` snippet with the current `data` format, fixed invalid nested
+  quotes) and added examples to `afc_integrations`.
+
+### Security Fixes
+- Added the `disable_tls_verification` option (default `false`) to keep
+  certificate verification on by default while allowing an explicit opt-out.
+- `afc_session` now fails gracefully on a failed login and reports a missing
+  `pyafc` dependency via `missing_required_lib`.
+
+### Bug Fixes
+- Removed a duplicate AFC connection that ran before the `check_mode` guard in
+  several modules, so `--check` no longer connects to AFC.
+- Fixed an invalid YAML example in `afc_switches` (broken indentation and a
+  duplicate `boot_partition` key).
+
+---
+
 # v1.0.0
 
 ### Overview

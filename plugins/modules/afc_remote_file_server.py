@@ -1,27 +1,29 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
 DOCUMENTATION = r"""
 ---
-module: afc_multifabrics
+module: afc_remote_file_server
 version_added: "0.0.1"
-short_description: Configure Multi-Fabrics.
+short_description: Create, update or delete a Remote File Transfer Server.
 description: >
-    This module is used to configure Multi-Fabrics.
+    This module creates, updates or deletes a Remote File Transfer Server
+    (RFTS) in HPE Aruba Networking Fabric Composer. A Remote File Transfer
+    Server defines an SFTP/SCP endpoint used by AFC to transfer files such
+    as backup archives.
 options:
     afc_ip:
         description: >
-            IP address of HPE ANW Fabric Composer.
+            IP address of the HPE ANW Fabric Composer.
         type: str
         required: true
     afc_username:
-        description: >
-            User account having permission to create MF on
-            HPE ANW Fabric Composer
+        description:
+        - User account having write permission on the HPE ANW Fabric Composer
         type: str
         required: false
     afc_password:
@@ -44,107 +46,100 @@ options:
         default: false
     operation:
         description: >
-            Operation to execute - Create.
+            Operation to be performed on the Remote File Transfer Server,
+            create, update or delete.
         type: str
         choices:
             - create
+            - update
+            - delete
         required: true
     data:
         description: >
-            Multi-Fabrics data containing information.
+            Data of the Remote File Transfer Server as depicted in the
+            example. Required for create and update operations. For delete
+            only the name is required.
         type: dict
         suboptions:
             name:
-                description: EVPN Workflow Name
+                description: Name of the Remote File Transfer Server.
                 type: str
                 required: true
-            local_fabric:
-                description: Name of the local Fabric
+            description:
+                description: Description of the RFTS configuration.
                 type: str
-                required: true
-            border_leader:
+                required: false
+            remote_file_server_hostname:
+                description: Hostname or IP address of the remote host.
+                type: str
+                required: false
+            protocol:
+                description: File transfer protocol to be used.
+                type: str
+                choices:
+                    - sftp
+                    - scp
+                required: false
+            username:
+                description: Username of the Remote File Transfer Server.
+                type: str
+                required: false
+            password:
                 description: >
-                    Name or IPv4 Address of the Border Leader.
-                    In case of VSX just provide the Name or
-                    IPv4 Address of one of the members.
-                type: str
-                required: true
-            l3_ebgp_borders:
-                description: L3 eBGP border switch(es)
-                type: list
-                elements: str
-                required: false
-            bgp_auth_password:
-                description: Set password for bgp neighbor
+                    Password of the Remote File Transfer Server for the
+                    above username.
                 type: str
                 required: false
-            uplink_to_uplink:
-                description: Enable or Disable uplink to uplink.
-                type: bool
+            location:
+                description: Base folder where the files need to be copied.
+                type: str
                 required: false
-            remote_fabrics:
-                description: Information related to the remote Fabric.
-                type: list
-                elements: dict
-                required: true
-                suboptions:
-                    fabric:
-                        description: Name of the remote Fabric
-                        type: str
-                        required: true
-                    border_leader:
-                        description: >
-                            Name or IPv4 Address of the Border Leader.
-                            In case of VSX just provide the Name or
-                            IPv4 Address of one of the members.
-                        type: str
-                        required: true
-                    peering_ip:
-                        description: IP address for BGP neighbor peering
-                        type: str
-                        required: true
         required: true
 author: Aruba Networks (@ArubaNetworks)
 """
 
 EXAMPLES = r"""
--   name: Configure L3LS settings using username and password
-    arubanetworks.afc.afc_multifabrics:
+-   name: Create a Remote File Transfer Server using username and password
+    arubanetworks.afc.afc_remote_file_server:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
         operation: "create"
         data:
-            name: "MF-ArubaFabric"
-            local_fabric: "Aruba-Fabric"
-            border_leader: "10.10.10.20"
-            remote_fabrics:
-                - fabric: "Aruba-Fabric2"
-                  border_leader: "10.20.20.20"
-                  peering_ip: "loopback0"
+            name: "Backup-Server"
+            description: "SFTP backup target"
+            remote_file_server_hostname: "10.100.100.50"
+            protocol: "sftp"
+            username: "backup"
+            password: "backup_password"
+            location: "/backups"
 
--   name: Configure L3LS settings using token
-    arubanetworks.afc.afc_multifabrics:
+-   name: Update a Remote File Transfer Server
+    arubanetworks.afc.afc_remote_file_server:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        operation: "update"
+        data:
+            name: "Backup-Server"
+            remote_file_server_hostname: "10.100.100.51"
+
+-   name: Delete a Remote File Transfer Server using token
+    arubanetworks.afc.afc_remote_file_server:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        operation: "create"
+        operation: "delete"
         data:
-            name: "MF-ArubaFabric"
-            local_fabric: "Aruba-Fabric"
-            border_leader: "10.10.10.20"
-            remote_fabrics:
-                - fabric: "Aruba-Fabric2"
-                  border_leader: "10.20.20.20"
-                  peering_ip: "loopback0"
-
+            name: "Backup-Server"
 """
+
 
 RETURN = r"""
 message:
     description: The output generated by the module
     type: str
     returned: always
-    sample: "Successfully completed configuration"
+    sample: "Successfully created remote file transfer server Backup-Server"
 status:
     description: True or False depending on the action taken
     type: bool
@@ -163,13 +158,13 @@ from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
     build_auth_data,
     instantiate_afc_object,
 )
-from pyafc.fabric import fabric
+from pyafc.services import rfts
 
 
 def main():
     module_args = {
         **afc_argument_spec(),
-        "operation": {"type": "str", "required": False},
+        "operation": {"type": "str", "required": True},
         "data": {"type": "dict", "required": True},
     }
 
@@ -178,10 +173,10 @@ def main():
         supports_check_mode=True,
     )
 
-    # Get playbook's arguments
     username = ansible_module.params["afc_username"]
     password = ansible_module.params["afc_password"]
     data = ansible_module.params["data"]
+    operation = ansible_module.params["operation"]
 
     result = {"changed": False}
 
@@ -197,18 +192,17 @@ def main():
     afc_instance = instantiate_afc_object(data=auth_data)
 
     if afc_instance.afc_connected:
-        fabric_instance = fabric.Fabric(
-            afc_instance.client,
-            name=data["local_fabric"],
-        )
-        if fabric_instance.uuid:
-            message, status, changed = fabric_instance.create_multi_fabrics(
-                **data
-            )
+
+        rfts_instance = rfts.Rfts(afc_instance.client, **data)
+
+        if operation == "create":
+            message, status, changed = rfts_instance.create_rfts(**data)
+        elif operation == "update":
+            message, status, changed = rfts_instance.update_rfts(**data)
+        elif operation == "delete":
+            message, status, changed = rfts_instance.delete_rfts()
         else:
-            message = f"Fabric {data['local_fabric']} not found"
-            status = False
-            changed = False
+            message = "Operation not supported - No action taken"
         # Disconnect session if username and password are passed
         if username and password:
             afc_instance.disconnect()

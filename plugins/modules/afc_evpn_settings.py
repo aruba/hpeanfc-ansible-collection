@@ -1,27 +1,27 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 # (C) Copyright 2020-2025 Hewlett Packard Enterprise Development LP.
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
 DOCUMENTATION = r"""
 ---
-module: afc_multifabrics
+module: afc_evpn_settings
 version_added: "0.0.1"
-short_description: Configure Multi-Fabrics.
+short_description: Update the global EVPN settings of a fabric.
 description: >
-    This module is used to configure Multi-Fabrics.
+    This module updates the global (fabric-wide) EVPN settings such as ARP
+    suppression, local SVI, local MAC and the VXLAN tunnel bridging mode.
 options:
     afc_ip:
         description: >
-            IP address of HPE ANW Fabric Composer.
+            IP address of the HPE ANW Fabric Composer.
         type: str
         required: true
     afc_username:
-        description: >
-            User account having permission to create MF on
-            HPE ANW Fabric Composer
+        description:
+        - User account having write permission on the HPE ANW Fabric Composer
         type: str
         required: false
     afc_password:
@@ -44,99 +44,85 @@ options:
         default: false
     operation:
         description: >
-            Operation to execute - Create.
+            Operation to be performed on the EVPN settings.
         type: str
         choices:
-            - create
+            - update
         required: true
     data:
         description: >
-            Multi-Fabrics data containing information.
+            Global EVPN settings data.
         type: dict
         suboptions:
-            name:
-                description: EVPN Workflow Name
+            fabric:
+                description: Fabric Name.
                 type: str
                 required: true
-            local_fabric:
-                description: Name of the local Fabric
-                type: str
+            arp_suppression:
+                description: Enable or disable ARP suppression.
+                type: bool
                 required: true
-            border_leader:
+            local_svi:
+                description: Enable or disable local SVI.
+                type: bool
+                required: false
+            local_mac:
+                description: Enable or disable local MAC.
+                type: bool
+                required: false
+            vxlan_tunnel_bridging_mode:
+                description: VXLAN tunnel bridging mode.
+                type: str
+                choices:
+                    - ibgp-ebgp
+                    - no-bridging
+                required: false
+            switches:
                 description: >
-                    Name or IPv4 Address of the Border Leader.
-                    In case of VSX just provide the Name or
-                    IPv4 Address of one of the members.
-                type: str
-                required: true
-            l3_ebgp_borders:
-                description: L3 eBGP border switch(es)
+                    List of switches on which to apply the settings. If not
+                    specified, the settings apply to the whole fabric.
                 type: list
                 elements: str
                 required: false
-            bgp_auth_password:
-                description: Set password for bgp neighbor
-                type: str
-                required: false
-            uplink_to_uplink:
-                description: Enable or Disable uplink to uplink.
-                type: bool
-                required: false
-            remote_fabrics:
-                description: Information related to the remote Fabric.
-                type: list
-                elements: dict
-                required: true
-                suboptions:
-                    fabric:
-                        description: Name of the remote Fabric
-                        type: str
-                        required: true
-                    border_leader:
-                        description: >
-                            Name or IPv4 Address of the Border Leader.
-                            In case of VSX just provide the Name or
-                            IPv4 Address of one of the members.
-                        type: str
-                        required: true
-                    peering_ip:
-                        description: IP address for BGP neighbor peering
-                        type: str
-                        required: true
         required: true
 author: Aruba Networks (@ArubaNetworks)
 """
 
 EXAMPLES = r"""
--   name: Configure L3LS settings using username and password
-    arubanetworks.afc.afc_multifabrics:
+-   name: Update EVPN settings using username and password
+    arubanetworks.afc.afc_evpn_settings:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        operation: "create"
+        operation: "update"
         data:
-            name: "MF-ArubaFabric"
-            local_fabric: "Aruba-Fabric"
-            border_leader: "10.10.10.20"
-            remote_fabrics:
-                - fabric: "Aruba-Fabric2"
-                  border_leader: "10.20.20.20"
-                  peering_ip: "loopback0"
+            fabric: "Aruba-Fabric"
+            arp_suppression: true
+            local_svi: true
+            local_mac: true
+            vxlan_tunnel_bridging_mode: "ibgp-ebgp"
 
--   name: Configure L3LS settings using token
-    arubanetworks.afc.afc_multifabrics:
+-   name: Update EVPN settings using token
+    arubanetworks.afc.afc_evpn_settings:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        operation: "create"
+        operation: "update"
         data:
-            name: "MF-ArubaFabric"
-            local_fabric: "Aruba-Fabric"
-            border_leader: "10.10.10.20"
-            remote_fabrics:
-                - fabric: "Aruba-Fabric2"
-                  border_leader: "10.20.20.20"
-                  peering_ip: "loopback0"
+            fabric: "Aruba-Fabric"
+            arp_suppression: true
 
+-   name: Enable Redistribute Local SVI on specific devices only (not the whole fabric)
+    arubanetworks.afc.afc_evpn_settings:
+        afc_ip: "10.10.10.10"
+        afc_username: "afc_admin"
+        afc_password: "afc_password"
+        operation: "update"
+        data:
+            fabric: "Aruba-Fabric"
+            local_svi: true
+            switches:
+                - "DC-8100-Leaf5"
+                - "DC-8100-Leaf6"
 """
 
 RETURN = r"""
@@ -144,7 +130,7 @@ message:
     description: The output generated by the module
     type: str
     returned: always
-    sample: "Successfully completed configuration"
+    sample: "Successfully updated EVPN Settings for fabric Aruba-Fabric"
 status:
     description: True or False depending on the action taken
     type: bool
@@ -169,7 +155,7 @@ from pyafc.fabric import fabric
 def main():
     module_args = {
         **afc_argument_spec(),
-        "operation": {"type": "str", "required": False},
+        "operation": {"type": "str", "required": True},
         "data": {"type": "dict", "required": True},
     }
 
@@ -181,6 +167,7 @@ def main():
     # Get playbook's arguments
     username = ansible_module.params["afc_username"]
     password = ansible_module.params["afc_password"]
+    operation = ansible_module.params["operation"]
     data = ansible_module.params["data"]
 
     result = {"changed": False}
@@ -197,18 +184,27 @@ def main():
     afc_instance = instantiate_afc_object(data=auth_data)
 
     if afc_instance.afc_connected:
+
         fabric_instance = fabric.Fabric(
             afc_instance.client,
-            name=data["local_fabric"],
+            name=data["fabric"],
         )
+
         if fabric_instance.uuid:
-            message, status, changed = fabric_instance.create_multi_fabrics(
-                **data
-            )
+            settings_data = {
+                key: value
+                for key, value in data.items()
+                if key != "fabric"
+            }
+            if operation == "update":
+                message, status, changed = (
+                    fabric_instance.update_evpn_settings(**settings_data)
+                )
+            else:
+                message = "Operation not supported - No action taken"
         else:
-            message = f"Fabric {data['local_fabric']} not found"
-            status = False
-            changed = False
+            message = "Fabric not found - No action taken"
+
         # Disconnect session if username and password are passed
         if username and password:
             afc_instance.disconnect()

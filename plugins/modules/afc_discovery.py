@@ -33,6 +33,14 @@ options:
             Auth token from the create session playbook.
         type: str
         required: false
+    disable_tls_verification:
+        description: >
+            Disable TLS certificate verification when connecting to AFC.
+            Only enable this for AFC instances using self-signed
+            certificates.
+        type: bool
+        required: false
+        default: false
     data:
         description: >
             List of IP addresses of the devices that need to be discovered,
@@ -120,6 +128,8 @@ changed:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    afc_argument_spec,
+    build_auth_data,
     instantiate_afc_object,
 )
 from pyafc.switches import switches
@@ -127,10 +137,7 @@ from pyafc.switches import switches
 
 def main():
     module_args = {
-        "afc_ip": {"type": "str", "required": True},
-        "afc_username": {"type": "str", "required": False},
-        "afc_password": {"type": "str", "required": False},
-        "auth_token": {"type": "str", "required": False},
+        **afc_argument_spec(),
         "data": {"type": "dict", "required": True},
     }
 
@@ -140,20 +147,9 @@ def main():
     )
 
     # Get playbook's arguments
-    token = None
-    ip = ansible_module.params["afc_ip"]
-    if "afc_username" in list(ansible_module.params.keys()):
-        username = ansible_module.params["afc_username"]
-    if "afc_password" in list(ansible_module.params.keys()):
-        password = ansible_module.params["afc_password"]
-    if "auth_token" in list(ansible_module.params.keys()):
-        token = ansible_module.params["auth_token"]
+    username = ansible_module.params["afc_username"]
+    password = ansible_module.params["afc_password"]
     data = ansible_module.params["data"]
-
-    if token is not None:
-        auth_data = {"ip": ip, "auth_token": token}
-    else:
-        auth_data = {"ip": ip, "username": username, "password": password}
 
     result = {"changed": False}
 
@@ -163,6 +159,8 @@ def main():
     status = False
     changed = False
     message = ""
+
+    auth_data = build_auth_data(ansible_module)
 
     afc_instance = instantiate_afc_object(data=auth_data)
 

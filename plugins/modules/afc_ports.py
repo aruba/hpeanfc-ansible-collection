@@ -38,6 +38,14 @@ options:
             Auth token from the create session playbook.
         type: str
         required: false
+    disable_tls_verification:
+        description: >
+            Disable TLS certificate verification when connecting to AFC.
+            Only enable this for AFC instances using self-signed
+            certificates.
+        type: bool
+        required: false
+        default: false
     fabric_name:
         description: >
             Name of the Fabric.
@@ -90,15 +98,16 @@ changed:
 
 from pyafc.ports import ports
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import instantiate_afc_object
+from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    afc_argument_spec,
+    build_auth_data,
+    instantiate_afc_object,
+)
 
 
 def main():
     module_args = dict(
-        afc_ip=dict(type="str", required=True),
-        afc_username=dict(type="str", required=False),
-        afc_password=dict(type="str", required=False),
-        auth_token=dict(type="str", required=False),
+        **afc_argument_spec(),
         ports_data=dict(type="dict", required=True)
     )
 
@@ -107,27 +116,11 @@ def main():
     )
 
     # Get playbook's arguments
-    token = None
-    ip = ansible_module.params["afc_ip"]
-    if 'afc_username' in list(ansible_module.params.keys()):
-        username = ansible_module.params["afc_username"]
-    if 'afc_password' in list(ansible_module.params.keys()):
-        password = ansible_module.params["afc_password"]
-    if 'auth_token' in list(ansible_module.params.keys()):
-        token = ansible_module.params["auth_token"]
+    username = ansible_module.params["afc_username"]
+    password = ansible_module.params["afc_password"]
     ports_data = ansible_module.params["ports_data"]
 
-    if token is not None:
-        data = {
-            "ip": ip,
-            "auth_token": token
-        }
-    else:
-        data = {
-            "ip": ip,
-            "username": username,
-            "password": password
-        }
+    data = build_auth_data(ansible_module)
 
     afc_instance = instantiate_afc_object(data=data)
 

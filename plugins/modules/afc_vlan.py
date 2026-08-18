@@ -36,12 +36,21 @@ options:
             Auth token from the create session playbook.
         type: str
         required: false
+    disable_tls_verification:
+        description: >
+            Disable TLS certificate verification when connecting to AFC.
+            Only enable this for AFC instances using self-signed
+            certificates.
+        type: bool
+        required: false
+        default: false
     operation:
         description: >
-            Operation to be performed with the VLAN, create or delete
+            Operation to be performed with the VLAN, create, update or delete
         type: str
-        operation:
+        choices:
             - create
+            - update
             - delete
         required: true
     data:
@@ -53,6 +62,7 @@ options:
                 description: VLAN type.
                 type: str
                 choices:
+                    - vlan
                     - vlan_group
                     - stretched_vlan
                 required: true
@@ -63,6 +73,49 @@ options:
             description:
                 description: VLAN Description.
                 type: str
+                required: false
+            fabric:
+                description: >
+                    VLAN specific.
+                    Name of the Fabric on which the VLAN(s) are managed.
+                type: str
+                required: false
+            vlan_id:
+                description: >
+                    VLAN specific.
+                    VLAN range(s), e.g. "10" or "10,20-30".
+                type: str
+                required: false
+            vlan_name:
+                description: >
+                    VLAN specific.
+                    Name given to the VLAN(s). Renaming an existing VLAN is
+                    dependent on the AFC version and may be a no-op on some
+                    releases; assigning devices always applies.
+                type: str
+                required: false
+            switches:
+                description: >
+                    VLAN specific.
+                    List of devices (IP address or name) to which the VLAN(s)
+                    are assigned or from which they are unassigned.
+                type: list
+                elements: str
+                required: false
+            fabric_scope:
+                description: >
+                    VLAN specific.
+                    Alternative to switches to scope the VLAN creation.
+                type: str
+                choices:
+                    - include_spine
+                    - exclude_spine
+                required: false
+            strict_firewall_bypass_enabled:
+                description: >
+                    VLAN specific.
+                    Enable strict firewall bypass on the VLAN(s).
+                type: bool
                 required: false
             vlans:
                 description: >
@@ -105,6 +158,57 @@ author: Aruba Networks (@ArubaNetworks)
 """
 
 EXAMPLES = r"""
+-   name: Create VLANs and assign them to devices using username and password
+    arubanetworks.afc.afc_vlan:
+        afc_ip: "10.10.10.10"
+        afc_username: "admin"
+        afc_password: "password"
+        operation: create
+        data:
+            type: vlan
+            fabric: DC1
+            vlan_id: "100,200-202"
+            vlan_name: Production
+            switches:
+                - 10.149.2.10
+                - Leaf-1
+
+-   name: Assign an existing VLAN to additional devices and rename it
+    arubanetworks.afc.afc_vlan:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        operation: update
+        data:
+            type: vlan
+            fabric: DC1
+            vlan_id: "100"
+            vlan_name: Prod-Renamed
+            switches:
+                - Leaf-2
+
+-   name: Unassign a VLAN from specific devices
+    arubanetworks.afc.afc_vlan:
+        afc_ip: "10.10.10.10"
+        auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
+        operation: delete
+        data:
+            type: vlan
+            fabric: DC1
+            vlan_id: "100"
+            switches:
+                - Leaf-2
+
+-   name: Delete VLANs from the whole Fabric
+    arubanetworks.afc.afc_vlan:
+        afc_ip: "10.10.10.10"
+        afc_username: "admin"
+        afc_password: "password"
+        operation: delete
+        data:
+            type: vlan
+            fabric: DC1
+            vlan_id: "100,200-202"
+
 -   name: Create a VLAN Group in HPE ANW Fabric Composer using username
           and password
     arubanetworks.afc.afc_vlan:
@@ -202,6 +306,8 @@ changed:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.arubanetworks.afc.plugins.module_utils.afc import (
+    afc_argument_spec,
+    build_auth_data,
     instantiate_afc_object,
 )
 from pyafc.fabric import fabric
@@ -210,10 +316,7 @@ from pyafc.ports import vlan_group
 
 def main():
     module_args = {
-        "afc_ip": {"type": "str", "required": True},
-        "afc_username": {"type": "str", "required": False},
-        "afc_password": {"type": "str", "required": False},
-        "auth_token": {"type": "str", "required": False},
+        **afc_argument_spec(),
         "operation": {"type": "str", "required": True},
         "data": {"type": "dict", "required": True},
     }
@@ -224,28 +327,12 @@ def main():
     )
 
     # Get playbook's arguments
-    token = None
-    ip = ansible_module.params["afc_ip"]
-    if "afc_username" in list(ansible_module.params.keys()):
-        username = ansible_module.params["afc_username"]
-    if "afc_password" in list(ansible_module.params.keys()):
-        password = ansible_module.params["afc_password"]
-    if "auth_token" in list(ansible_module.params.keys()):
-        token = ansible_module.params["auth_token"]
+    username = ansible_module.params["afc_username"]
+    password = ansible_module.params["afc_password"]
     operation = ansible_module.params["operation"]
     data = ansible_module.params["data"]
 
-    if token is not None:
-        auth_data = {
-            "ip": ip,
-            "auth_token": token,
-        }
-    else:
-        auth_data = {
-            "ip": ip,
-            "username": username,
-            "password": password,
-        }
+    auth_data = build_auth_data(ansible_module)
 
     afc_instance = instantiate_afc_object(data=auth_data)
 
@@ -268,6 +355,12 @@ def main():
                 message, status, changed = vlan_instance.create_vlan_group(
                     **data,
                 )
+            elif data["type"] == "vlan":
+                fabric_instance = fabric.Fabric(
+                    afc_instance.client,
+                    name=data["fabric"],
+                )
+                message, status, changed = fabric_instance.create_vlan(**data)
             elif data["type"] == "stretched_vlan":
                 fabric_instance = fabric.Fabric(
                     afc_instance.client,
@@ -279,7 +372,13 @@ def main():
             else:
                 message = "Type not supported - No action taken"
         elif operation == "update":
-            if data["type"] == "stretched_vlan":
+            if data["type"] == "vlan":
+                fabric_instance = fabric.Fabric(
+                    afc_instance.client,
+                    name=data["fabric"],
+                )
+                message, status, changed = fabric_instance.update_vlan(**data)
+            elif data["type"] == "stretched_vlan":
                 fabric_instance = fabric.Fabric(
                     afc_instance.client,
                     name=data["fabrics"][0],
@@ -296,6 +395,12 @@ def main():
                     **data,
                 )
                 message, status, changed = vlan_instance.delete_vlan_group()
+            elif data["type"] == "vlan":
+                fabric_instance = fabric.Fabric(
+                    afc_instance.client,
+                    name=data["fabric"],
+                )
+                message, status, changed = fabric_instance.delete_vlan(**data)
             else:
                 message = "Type not supported - No action taken"
         else:

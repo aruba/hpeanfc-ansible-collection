@@ -1,45 +1,102 @@
 # module: afc_stp
 
-Description: This module creates or deletes an STP configuration.
+Description: This module creates or deletes an STP configuration in the fabric.
 
 ##### ARGUMENTS
 
 ```YAML
 afc_ip:
-    description: >
-        IP address of the Aruba Fabric Composer.
-    type: str
-    required: true
+  description: IP address of the HPE ANW Fabric Composer.
+  type: str
+  required: true
 afc_username:
-    description:
-    - User account having write permission on the Aruba Fabric Composer
-    type: str
-    required: false
+  description:
+  - User account having write permission on the HPE ANW Fabric Composer
+  type: str
+  required: false
 afc_password:
-    description:
-    - Password of the user account
-    type: str
-    required: false
+  description:
+  - Password of the user account
+  type: str
+  required: false
 auth_token:
-    description: >
-        Auth token from the create session playbook.
-    type: str
-    required: false
+  description: Auth token from the create session playbook.
+  type: str
+  required: false
+disable_tls_verification:
+  description: Disable TLS certificate verification when connecting to AFC. Only
+    enable this for AFC instances using self-signed certificates.
+  type: bool
+  required: false
+  default: false
 operation:
-    description: >
-        Operation to be performed on the STP configuration, create or delete.
-    type: str
-    required: true
-stp_name:
-    description: >
-        Name of the STP configuration to be created or deleted.
-    type: str
-    required: true
-stp_data:
-    description: >
-        STP configuration data. Structure is provided in the example.
-    type: dict
-    required: false
+  description: Operation to be performed on the STP configuration, create or delete.
+  type: str
+  choices:
+  - create
+  - delete
+  required: true
+data:
+  description: STP configuration data. Structure is provided in the example.
+  type: dict
+  suboptions:
+    name:
+      description: STP Workflow Name
+      type: str
+      required: true
+    fabrics:
+      description: List of fabrics
+      type: list
+      elements: str
+      required: false
+    config_type:
+      description: STP Type
+      type: str
+      choices:
+      - mstp
+      - rpvst
+      default: mstp
+      required: false
+    configuration:
+      description: SNMPv3 user
+      type: list
+      elements: dict
+      suboptions:
+        mstp_config:
+          description: MSTP Configuration elements
+          type: dict
+          suboptions:
+            config_revision:
+              description: MSTP Configuration Revision
+              type: int
+              required: true
+            config_name:
+              description: MSTP Configuration Name
+              type: int
+              required: true
+            instances:
+              description: MSTP Instances configuration
+              type: list
+              elements: dict
+              suboptions:
+                instance_id:
+                  description: MST region instance ID
+                  type: str
+                  required: true
+                vlan_ids:
+                  description: MST region VLAN IDs
+                  type: str
+                  required: true
+        rpvst_config:
+          description: RPVST Configuration elements
+          type: dict
+          suboptions:
+            vlan_ids:
+              description: RPVST Instance VLAN IDs
+              type: str
+              required: true
+      required: true
+  required: true
 ```
 
 ##### EXAMPLES
@@ -50,9 +107,9 @@ stp_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        stp_name: "Test-STP"
         operation: "create"
-        stp_data:
+        data:
+            name: "Test-STP"
             config_type: "mstp"
             configuration:
                 mstp_config:
@@ -64,16 +121,18 @@ stp_data:
         afc_ip: "10.10.10.10"
         afc_username: "afc_admin"
         afc_password: "afc_password"
-        stp_name: "Test-STP"
         operation: "delete"
+        data:
+            name: "Test-STP"
+
 
 -   name: Create STP configuration using token
     arubanetworks.afc.afc_stp:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        stp_name: "Test-STP"
         operation: "create"
-        stp_data:
+        data:
+            name: "Test-STP"
             config_type: "mstp"
             configuration:
                 mstp_config:
@@ -84,6 +143,7 @@ stp_data:
     arubanetworks.afc.afc_stp:
         afc_ip: "10.10.10.10"
         auth_token: "xxlkjlsdfluwoeirkjlkjsldjjjlkj23423ljlkj"
-        stp_name: "Test-STP"
         operation: "delete"
+        data:
+            name: "Test-STP"
 ```
